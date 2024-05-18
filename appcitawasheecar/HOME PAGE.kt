@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalCarWash
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -31,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -100,7 +105,7 @@ fun pantallaHome(controller: NavController) {
                             contentDescription = null
                         )
                     }
-                    androidx.compose.material.IconButton(onClick = { /* ABRIR PANTALLA */ }) {
+                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
                         androidx.compose.material.Icon(
                             Icons.Filled.LocalCarWash,
                             contentDescription = null
@@ -141,15 +146,19 @@ fun pantallaHome(controller: NavController) {
             Row {
                 cajaTop()
             }
+            spacer(espacio = 18)
             Row {
                 botonCita(controller)
             }
+            spacer(espacio = 10)
             Row {
                 botonRegistrarse(controller)
             }
+            spacer(espacio = 20)
             Row {
                 carruselFotos()
             }
+            spacer(espacio = 12)
             cajaBottom()
         }
     }
@@ -159,7 +168,13 @@ fun pantallaHome(controller: NavController) {
 fun botonCita(controller: NavController) {
     Button(
         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .width(250.dp)
+            .height(40.dp),
+        shape = RectangleShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Blue, contentColor = Color.White
+        )
     ) {
         Text(text = "¡Pide tu cita YA!", fontSize = 18.sp)
     }
@@ -169,7 +184,13 @@ fun botonCita(controller: NavController) {
 fun botonRegistrarse(controller: NavController) {
     Button(
         onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .width(250.dp)
+            .height(40.dp),
+        shape = RectangleShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Blue, contentColor = Color.White
+        )
     ) {
         Text(text = "¡Registrate!", fontSize = 18.sp)
     }

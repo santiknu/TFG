@@ -2,6 +2,7 @@ package com.example.appcitawasheecar
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +30,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.navigation.NavController
+import com.example.appcitawasheecar.navigation.AppScreens
 
 @Composable
 fun logo(){
@@ -39,6 +43,11 @@ fun logo(){
     )
     /*Icon(
     )*/
+}
+
+@Composable
+fun spacer(espacio : Int){
+    Spacer(modifier = Modifier.padding(espacio.dp))
 }
 
 //-----------------ESTRUCTURA BASE DE APP------------------------
@@ -91,7 +100,7 @@ fun pantallaHome(controller: NavController) {
                             contentDescription = null
                         )
                     }
-                    androidx.compose.material.IconButton(onClick = { /* ABRIR PANTALLA */ }) {
+                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
                         androidx.compose.material.Icon(
                             Icons.Filled.LocalCarWash,
                             contentDescription = null

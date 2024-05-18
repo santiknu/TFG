@@ -90,7 +90,7 @@ fun pantallaInicioSesion(controller : NavController) {
                             contentDescription = null
                         )
                     }
-                    androidx.compose.material.IconButton(onClick = { /* ABRIR PANTALLA*/ }) {
+                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
                         androidx.compose.material.Icon(
                             Icons.Filled.LocalCarWash,
                             contentDescription = null
