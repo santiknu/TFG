@@ -34,6 +34,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
@@ -124,17 +125,6 @@ fun pantallaHome(controller: NavController) {
             )
         }
     ) { innerPadding ->
-
-        /*NavHost(
-            navController = navController,
-            startDestination = WasheeCarApp.HOME.name,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(route = WasheeCarApp.HOME.name){
-                pantallaHome()
-            }
-        }*/
-
         Column(
             Modifier
                 .fillMaxSize()
@@ -207,7 +197,7 @@ fun cajaTop() {
             painter = painterResource(id = R.drawable.fondo_home),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().blur(16.dp)
         )
         Column(
             modifier = Modifier
@@ -229,10 +219,12 @@ fun cajaTop() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun carruselFotos() {
-    val imagen1: Painter = painterResource(id = R.drawable.fondo_home)
-    val imagen2: Painter = painterResource(id = R.drawable.fondo_home)
-    val imagen3: Painter = painterResource(id = R.drawable.fondo_home)
-    val fotos: List<Painter> = listOf(imagen1, imagen2, imagen3)
+
+    val imagen1: Painter = painterResource(id = R.drawable.tapiceria_ejemplo_sucio_1)
+    val imagen2: Painter = painterResource(id = R.drawable.tapiceria_ejemplo_limpio)
+    val imagen3: Painter = painterResource(id = R.drawable.tapiceria_ejemplo_sucio_2)
+    val imagen4: Painter = painterResource(id = R.drawable.tapiceria_ejemplo_limpio_2)
+    val fotos: List<Painter> = listOf(imagen1, imagen2, imagen3, imagen4)
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -242,15 +234,14 @@ fun carruselFotos() {
         HorizontalPager(
             count = fotos.size,
             modifier = Modifier.fillMaxSize()
-        ) { page ->
-            for (foto in fotos) {
-                Image(painter = foto, contentDescription = null)
+        ) {
+            fotos.forEach{ foto ->
+                Image(
+                    painter = foto,
+                    contentDescription = null
+                )
             }
         }
-        /*HorizontalPagerIndicator(
-            pagerState = pagerState,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )*/
     }
 }
 
