@@ -146,6 +146,25 @@ fun getServiciosInteriorC(): List<Servicio> {
         Servicio("Limpieza Tapiceria", "100-150", "3-6", R.drawable.tapiceria),
     )
 }
+fun getServiciosInteriorCNombre(): List<String> {
+    return listOf(
+        "Limpieza Integral",
+        "Limpieza Tapiceria Cuero",
+        "Limpieza Tapiceria"
+    )
+}
+
+fun getServiciosInterior(): List<Servicio> {
+    return listOf(
+        Servicio("Aspirado", "10-15", "5-30", R.drawable.aspirado),
+        Servicio("Limpieza de plasticos", "8-10", "10-20", R.drawable.plasticos),
+        Servicio("Limpieza de cristales", "6", "2-5", R.drawable.cristales),
+        Servicio("Limpieza de cercos", "5", "2-10", R.drawable.cercos),
+        Servicio("Limpieza Integral", "25-40", "30-50", R.drawable.integral),
+        Servicio("Limpieza Tapiceria Cuero", "50", "60-90", R.drawable.cuero),
+        Servicio("Limpieza Tapiceria", "100-150", "3-6", R.drawable.tapiceria),
+    )
+}
 
 @Composable
 fun ItemServicio(servicio: Servicio) {

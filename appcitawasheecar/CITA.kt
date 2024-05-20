@@ -60,6 +60,8 @@ fun pantallaCita(controller: NavController) {
 
     var fechaSeleccionada by remember { mutableStateOf<Date?>(null) }
     var horaSeleccionada by remember { mutableStateOf<String?>(null) }
+    var servicioSeleccionado by remember { mutableStateOf<String?>(null) }
+    var pulsadoAñadirServicio by remember { mutableStateOf( false) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -123,17 +125,39 @@ fun pantallaCita(controller: NavController) {
         ) {
             spacer(espacio = 8)
             Column {
-                Text(text = "Selecciona un dia")
+                Text(
+                    text = "Selecciona un dia",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                )
                 selectorFecha(
                     fechaSeleccionada = fechaSeleccionada,
                     eleccion = { fecha -> fechaSeleccionada = fecha })
             }
             spacer(espacio = 8)
             Column {
-                Text(text = "Selecciona una hora")
+                Text(
+                    text = "Selecciona una hora",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                )
                 selectorHora(
                     horaSeleccionada = horaSeleccionada,
                     eleccion = { hora -> horaSeleccionada = hora })
+            }
+            spacer(espacio = 8)
+            Column {
+                Text(
+                    text = "Selecciona un servicio",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                )
+                selectorServicio(
+                    servicioSeleccionado = servicioSeleccionado,
+                    eleccion = { servicio -> servicioSeleccionado = servicio })
             }
             spacer(espacio = 8)
             Column() {
@@ -245,10 +269,12 @@ fun selectorFecha(fechaSeleccionada: Date?, eleccion: (Date) -> Unit) {
     Box {
         TextButton(
             onClick = { expandido = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
         ) {
             Text(
-                text = fechaSeleccionada?.let { dateFormatter.format(it) } ?: ""
+                text = fechaSeleccionada?.let { dateFormatter.format(it) } ?: "Fecha"
             )
         }
         DropdownMenu(
@@ -287,10 +313,12 @@ fun selectorHora(horaSeleccionada: String?, eleccion: (String) -> Unit) {
     Box {
         TextButton(
             onClick = { expandido = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
         ) {
             Text(
-                text = horaSeleccionada ?: ""
+                text = horaSeleccionada ?: "Hora"
             )
         }
 
@@ -307,6 +335,60 @@ fun selectorHora(horaSeleccionada: String?, eleccion: (String) -> Unit) {
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) {
+
+    var expandido by remember { mutableStateOf(false) }
+    val serviciosInterior = getServiciosInterior()
+    val serviciosInteriorCNombre  = getServiciosInteriorCNombre()
+    val serviciosSeleccionados = remember { mutableListOf<String>() }
+    var serv : String? = null
+    var pulsedAñadirServicio = false
+
+    Box {
+        TextButton(
+            onClick = { expandido = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
+        ) {
+            Text(
+                text = servicioSeleccionado ?: "Servicio"
+            )
+        }
+
+        DropdownMenu(
+            expanded = expandido,
+            onDismissRequest = { expandido = false }
+        ) {
+            serviciosInterior.forEach { servicio ->
+                serv = servicio.nombre
+                DropdownMenuItem(
+                    { Text(text = servicio.nombre) },
+                    onClick = { expandido = false; eleccion(servicio.nombre) }
+                )
+            }
+        }
+    }
+    if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)){
+        Button(
+            onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
+            modifier = Modifier
+                .height(40.dp)
+                .width(250.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Blue, contentColor = Color.White
+            ),
+            shape = RectangleShape
+        ) {
+            androidx.compose.material3.Text(text = "AÑADIR SERVICIO")
+        }
+        if (pulsedAñadirServicio){
+            selectorServicio(servicioSeleccionado = servicioSeleccionado, eleccion = { servicio -> serv = servicio })
         }
     }
 }
