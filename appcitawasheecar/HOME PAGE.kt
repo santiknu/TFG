@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,11 +21,15 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalCarWash
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,7 +44,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,30 +69,25 @@ fun pantallaHome(controller: NavController) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            androidx.compose.material3.CenterAlignedTopAppBar(
+            CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color(100,149,237),
+                    titleContentColor = Color(240,255,255),
+                    actionIconContentColor = Color(240,255,255)
                 ),
                 title = {
-                    androidx.compose.material.Text(
+                    Text(
                         "Menu Principal",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
-                /*navigationIcon = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Menu,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                },*/
                 actions = {
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                        Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
@@ -98,28 +95,43 @@ fun pantallaHome(controller: NavController) {
             )
         },
         bottomBar = {
-            androidx.compose.material3.BottomAppBar(
+            BottomAppBar(
+                containerColor = Color(100,149,237),
+                contentColor = Color(240,255,255),
                 actions = {
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(
+                        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
                             Icons.Filled.Home,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(
+                        onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
                             Icons.Filled.LocalCarWash,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
                 floatingActionButton = {
-                    androidx.compose.material3.FloatingActionButton(
+                    FloatingActionButton(
                         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = Color(240,255,255),
+                        contentColor = Color(100,149,237),
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
-                        androidx.compose.material.Icon(Icons.Filled.Event, null)
+                        Icon(
+                            Icons.Filled.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
                 }
             )
@@ -148,6 +160,8 @@ fun pantallaHome(controller: NavController) {
             Row {
                 carruselFotos()
             }
+            spacer(espacio = 15)
+            Mapa()
             spacer(espacio = 12)
             cajaBottom()
         }
@@ -163,7 +177,7 @@ fun botonCita(controller: NavController) {
             .height(40.dp),
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Blue, contentColor = Color.White
+            containerColor = Color(100,149,237), contentColor = Color.White
         )
     ) {
         Text(text = "¡Pide tu cita YA!", fontSize = 18.sp)
@@ -179,7 +193,7 @@ fun botonRegistrarse(controller: NavController) {
             .height(40.dp),
         shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Blue, contentColor = Color.White
+            containerColor = Color(100,149,237), contentColor = Color.White
         )
     ) {
         Text(text = "¡Registrate!", fontSize = 18.sp)
@@ -197,23 +211,18 @@ fun cajaTop() {
             painter = painterResource(id = R.drawable.fondo_home),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().blur(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(8.dp)
         )
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .align(Alignment.TopCenter)
+                .align(Alignment.Center)
         ) {
-            logo()
-            Text(
-                text = "WASHEE CAR",
-                style = TextStyle(color = Color.White),
-                modifier = Modifier
-                    .padding(top = 80.dp)
-            )
+            logoPNG()
         }
     }
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -227,20 +236,21 @@ fun carruselFotos() {
     val fotos: List<Painter> = listOf(imagen1, imagen2, imagen3, imagen4)
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HorizontalPager(
             count = fotos.size,
             modifier = Modifier.fillMaxSize()
-        ) {
-            fotos.forEach{ foto ->
-                Image(
-                    painter = foto,
-                    contentDescription = null
-                )
-            }
+        ) { page ->
+            Image(
+                painter = fotos[page],
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -249,17 +259,63 @@ fun carruselFotos() {
 @Composable
 fun cajaBottom() {
     //Mapa()
-    Icon(imageVector = Icons.Filled.Info, contentDescription = "info")
-    Text(text = "Calle del Trigo 31, 45223, Seseña Viejo")
-    Text(text = "644876245")
-    Text(text = "washeecar@gmail.com")
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.Center)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = Icons.Filled.Info, contentDescription = "info")
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Calle del Trigo 31, 45223, Seseña Viejo")
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "644876245")
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "washeecar@gmail.com")
+            }
+        }
+    }
 }
 
-/*@Composable
+@Composable
 fun Mapa() {
-    MapViewContainer()
+    //MapViewContainer()
+    Image(
+        painter = painterResource(id = R.drawable.mapa),
+        contentDescription = "Mapa",
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+    )
 }
-
+/*
 @Composable
 private fun MapViewContainer() {
     MapView(

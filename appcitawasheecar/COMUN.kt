@@ -38,11 +38,18 @@ import com.example.appcitawasheecar.navigation.AppScreens
 fun logo(){
     Image(
         painter = painterResource(id = R.drawable.washee_car_logo),
-        contentDescription = "logo instagram",
-        modifier = Modifier.size(175.dp)
+        contentDescription = "logo",
+        modifier = Modifier.size(200 .dp)
     )
-    /*Icon(
-    )*/
+}
+
+@Composable
+fun logoPNG(){
+    Image(
+        painter = painterResource(id = R.drawable.logo_png),
+        contentDescription = "logo png",
+        modifier = Modifier.size(320.dp)
+    )
 }
 
 @Composable
@@ -61,30 +68,25 @@ fun pantallaHome(controller: NavController) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            androidx.compose.material3.CenterAlignedTopAppBar(
+            CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color(100,149,237),
+                    titleContentColor = Color(240,255,255),
+                    actionIconContentColor = Color(240,255,255)
                 ),
                 title = {
-                    androidx.compose.material.Text(
+                    Text(
                         "Menu Principal",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
-                /*navigationIcon = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Menu,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                },*/
                 actions = {
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                        Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
@@ -92,28 +94,43 @@ fun pantallaHome(controller: NavController) {
             )
         },
         bottomBar = {
-            androidx.compose.material3.BottomAppBar(
+            BottomAppBar(
+                containerColor = Color(100,149,237),
+                contentColor = Color(240,255,255),
                 actions = {
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(
+                        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
                             Icons.Filled.Home,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(
+                        onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
                             Icons.Filled.LocalCarWash,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
                 floatingActionButton = {
-                    androidx.compose.material3.FloatingActionButton(
+                    FloatingActionButton(
                         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = Color(240,255,255),
+                        contentColor = Color(100,149,237),
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
-                        androidx.compose.material.Icon(Icons.Filled.Event, null)
+                        Icon(
+                            Icons.Filled.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
                 }
             )
@@ -126,9 +143,11 @@ fun pantallaHome(controller: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
-        ) {}
+        ) {
+        }
     }
 }
+
 */
 //------------------------BASES RECHAZADAS--------------------
 /*@Composable

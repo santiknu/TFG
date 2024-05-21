@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -27,7 +26,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
@@ -61,27 +59,30 @@ fun pantallaCita(controller: NavController) {
     var fechaSeleccionada by remember { mutableStateOf<Date?>(null) }
     var horaSeleccionada by remember { mutableStateOf<String?>(null) }
     var servicioSeleccionado by remember { mutableStateOf<String?>(null) }
-    var pulsadoAñadirServicio by remember { mutableStateOf( false) }
+    var pulsadoAñadirServicio by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color(100, 149, 237),
+                    titleContentColor = Color(240, 255, 255),
+                    actionIconContentColor = Color(240, 255, 255)
                 ),
                 title = {
-                    Text(
-                        "Cita",
+                    androidx.compose.material3.Text(
+                        "Menu Principal",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
-                        Icon(
+                    androidx.compose.material3.IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                        androidx.compose.material3.Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
@@ -90,27 +91,42 @@ fun pantallaCita(controller: NavController) {
         },
         bottomBar = {
             BottomAppBar(
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) }) {
-                        Icon(
+                    androidx.compose.material3.IconButton(
+                        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        androidx.compose.material3.Icon(
                             Icons.Filled.Home,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
-                    IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
-                        Icon(
+                    androidx.compose.material3.IconButton(
+                        onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        androidx.compose.material3.Icon(
                             Icons.Filled.LocalCarWash,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = Color(240, 255, 255),
+                        contentColor = Color(100, 149, 237),
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
-                        Icon(Icons.Filled.Event, null)
+                        androidx.compose.material3.Icon(
+                            Icons.Filled.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
                 }
             )
@@ -181,6 +197,7 @@ fun datosCoche() {
 
     var matricula by remember { mutableStateOf("") }
     var marca by remember { mutableStateOf("") }
+    var modelo by remember { mutableStateOf("") }
 
     Text(
         text = "Informacion del coche",
@@ -205,6 +222,15 @@ fun datosCoche() {
         value = marca,
         onValueChange = { marca = it },
         label = { Text("Marca") }
+    )
+    spacer(espacio = 3)
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 10.dp, end = 10.dp),
+        value = modelo,
+        onValueChange = { modelo = it },
+        label = { Text("Modelo") }
     )
 }
 
@@ -344,9 +370,9 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
 
     var expandido by remember { mutableStateOf(false) }
     val serviciosInterior = getServiciosInterior()
-    val serviciosInteriorCNombre  = getServiciosInteriorCNombre()
+    val serviciosInteriorCNombre = getServiciosInteriorCNombre()
     val serviciosSeleccionados = remember { mutableListOf<String>() }
-    var serv : String? = null
+    var serv: String? = null
     var pulsedAñadirServicio = false
 
     Box {
@@ -374,7 +400,7 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
             }
         }
     }
-    if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)){
+    if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)) {
         Button(
             onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
             modifier = Modifier
@@ -387,8 +413,10 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
         ) {
             androidx.compose.material3.Text(text = "AÑADIR SERVICIO")
         }
-        if (pulsedAñadirServicio){
-            selectorServicio(servicioSeleccionado = servicioSeleccionado, eleccion = { servicio -> serv = servicio })
+        if (pulsedAñadirServicio) {
+            selectorServicio(
+                servicioSeleccionado = servicioSeleccionado,
+                eleccion = { servicio -> serv = servicio })
         }
     }
 }

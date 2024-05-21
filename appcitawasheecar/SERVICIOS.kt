@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Scaffold
@@ -19,10 +20,15 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalCarWash
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,22 +56,25 @@ fun pantallaServicios(controller: NavController) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            androidx.compose.material3.CenterAlignedTopAppBar(
+            CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color(100,149,237),
+                    titleContentColor = Color(240,255,255),
+                    actionIconContentColor = Color(240,255,255)
                 ),
                 title = {
-                    androidx.compose.material.Text(
-                        "Servicios y limpiezas",
+                    Text(
+                        "Menu Principal",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
                 actions = {
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                        Icon(
                             imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
@@ -73,28 +82,43 @@ fun pantallaServicios(controller: NavController) {
             )
         },
         bottomBar = {
-            androidx.compose.material3.BottomAppBar(
+            BottomAppBar(
+                containerColor = Color(100,149,237),
+                contentColor = Color(240,255,255),
                 actions = {
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(
+                        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
                             Icons.Filled.Home,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
-                    androidx.compose.material.IconButton(onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) }) {
-                        androidx.compose.material.Icon(
+                    IconButton(
+                        onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) },
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        Icon(
                             Icons.Filled.LocalCarWash,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(33.dp)
                         )
                     }
                 },
                 floatingActionButton = {
-                    androidx.compose.material3.FloatingActionButton(
+                    FloatingActionButton(
                         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = Color(240,255,255),
+                        contentColor = Color(100,149,237),
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
-                        androidx.compose.material.Icon(Icons.Filled.Event, null)
+                        Icon(
+                            Icons.Filled.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
                     }
                 }
             )
@@ -103,8 +127,7 @@ fun pantallaServicios(controller: NavController) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-            /*.verticalScroll(rememberScrollState())*/,
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -136,6 +159,14 @@ fun getServiciosInteriorB(): List<Servicio> {
         Servicio("Limpieza de plasticos", "8-10", "10-20", R.drawable.plasticos),
         Servicio("Limpieza de cristales", "6", "2-5", R.drawable.cristales),
         Servicio("Limpieza de cercos", "5", "2-10", R.drawable.cercos),
+    )
+}
+fun getServiciosInteriorBNombre(): List<String> {
+    return listOf(
+       "Aspirado",
+        "Limpieza de plasticos",
+        "Limpieza de cristales",
+        "Limpieza de cercos",
     )
 }
 
