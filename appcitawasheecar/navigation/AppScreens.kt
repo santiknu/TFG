@@ -5,5 +5,6 @@ enum class AppScreens (val ruta : String) {
     CITAS_SCREEN("Cita Screen"),
     PERFIL_SCREEN("Perfil Screen"),
     LOGIN_SCREEN("Login Screen"),
-    SERVICIOS_SCREEN("Servicios Screen")
+    SERVICIOS_SCREEN("Servicios Screen"),
+    REGISTER_SCREEN("Register Screen"),
 }

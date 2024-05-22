@@ -405,7 +405,8 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
             onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
             modifier = Modifier
                 .height(40.dp)
-                .width(250.dp),
+                .width(250.dp)
+                .padding(start = 10.dp, top = 4.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Blue, contentColor = Color.White
             ),

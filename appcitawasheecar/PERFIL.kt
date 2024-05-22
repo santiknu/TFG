@@ -117,6 +117,33 @@ fun pantallaPerfil(controller: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
-        ) {}
+        ) {
+
+        }
     }
+}
+
+@Composable
+fun datosUser(){
+
+}
+
+@Composable
+fun datosCar(){
+
+}
+
+@Composable
+fun botonCerrarSesion(){
+
+}
+
+@Composable
+fun botonEditar(){
+
+}
+
+@Composable
+fun botonGuardar(){
+    
 }

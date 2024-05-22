@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.appcitawasheecar.screens.CitaScreen
 import com.example.appcitawasheecar.screens.HomeScreen
 import com.example.appcitawasheecar.screens.InicioScreen
+import com.example.appcitawasheecar.screens.PerfilScreen
 import com.example.appcitawasheecar.screens.ServiciosScreen
 
 @Composable
@@ -22,11 +23,14 @@ fun Navigation() {
         composable(route = AppScreens.CITAS_SCREEN.ruta) {
             CitaScreen(navController)
         }
-        /*composable(route = AppScreens.PERFIL_SCREEN.ruta){
-
-        }*/
+        composable(route = AppScreens.PERFIL_SCREEN.ruta){
+            PerfilScreen(navController)
+        }
         composable(route = AppScreens.SERVICIOS_SCREEN.ruta){
             ServiciosScreen(navController)
         }
+        /*composable(route = AppScreens.REGISTER_SCREEN.ruta){
+
+        }*/
     }
 }
