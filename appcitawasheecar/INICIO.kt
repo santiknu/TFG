@@ -1,5 +1,7 @@
 package com.example.appcitawasheecar
 
+import android.app.AlertDialog
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -51,10 +53,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaInicioSesion(controller: NavController) {
+
+    var user by remember { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -63,19 +70,19 @@ fun pantallaInicioSesion(controller: NavController) {
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(100,149,237),
-                    titleContentColor = Color(240,255,255),
-                    actionIconContentColor = Color(240,255,255)
+                    containerColor = Color(100, 149, 237),
+                    titleContentColor = Color(240, 255, 255),
+                    actionIconContentColor = Color(240, 255, 255)
                 ),
                 title = {
                     Text(
-                        "Menu Principal",
+                        "Iniciar Sesion",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                    IconButton(onClick = { controller.navigate(route = AppScreens.PERFIL_SCREEN.ruta) }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
@@ -88,8 +95,8 @@ fun pantallaInicioSesion(controller: NavController) {
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = Color(100,149,237),
-                contentColor = Color(240,255,255),
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 actions = {
                     IconButton(
                         onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
@@ -115,8 +122,8 @@ fun pantallaInicioSesion(controller: NavController) {
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = Color(240,255,255),
-                        contentColor = Color(100,149,237),
+                        containerColor = Color(240, 255, 255),
+                        contentColor = Color(100, 149, 237),
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                     ) {
                         Icon(
@@ -151,34 +158,38 @@ fun pantallaInicioSesion(controller: NavController) {
             Row(
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(top = 30.dp, bottom = 20.dp)
+                    .padding(top = 30.dp)
             ) {
-                botonLogIn(controller)
+                botonLogIn(controller, user = user, password = password)
+            }
+            spacer(espacio = 20)
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 30.dp, bottom = 10.dp)
+            ) {
+                noCuenta(controller = controller)
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun campoUser() {
-    var texto by remember {
-        mutableStateOf("")
-    }
+    var enabled by rememberSaveable { mutableStateOf(false) }
+    var texto by rememberSaveable { mutableStateOf("")}
     TextField(
         value = texto,
-        onValueChange = { texto = it },
+        onValueChange = {enabled = true ; texto = it },
         placeholder = { Text(text = "Email o numero de telefono", color = Color.Gray) },
         shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.textFieldColors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = Color.Black,
-            //textColor = Color.Black,
-            containerColor = Color(247, 237, 237, 255)
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Transparent,
+            focusedContainerColor = Color(247, 237, 237, 255),
+            unfocusedContainerColor = Color(247, 237, 237, 255),
+            cursorColor = Color.Black
         ),
-
-
         modifier = Modifier
             .size(325.dp, 50.dp)
             .background(color = Color.White)
@@ -188,20 +199,22 @@ fun campoUser() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampoContraseña() {
+
     var texto by rememberSaveable { mutableStateOf("") }
+    var enabled by rememberSaveable { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
 
     TextField(
         value = texto,
-        onValueChange = { texto = it },
+        onValueChange = { enabled = true ; texto = it },
         placeholder = { Text(text = "Contraseña", color = Color.Gray) },
         shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.textFieldColors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = Color.Black,
-            //textColor = Color.Black,
-            containerColor = Color(247, 237, 237, 255)
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Transparent,
+            focusedContainerColor = Color(247, 237, 237, 255),
+            unfocusedContainerColor = Color(247, 237, 237, 255),
+            cursorColor = Color.Black
         ),
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -233,14 +246,10 @@ fun CampoContraseña() {
 }
 
 @Composable
-fun botonLogIn(controller: NavController) {
-
-    var enabled by rememberSaveable {
-        mutableStateOf(false)
-    }
+fun botonLogIn(controller: NavController, user: String, password: String) {
 
     Button(
-        onClick = { enabled = true; controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) ; iniciarSesion(user, password)},
         modifier = Modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent, contentColor = Color.Blue
@@ -250,14 +259,46 @@ fun botonLogIn(controller: NavController) {
     }
 }
 
+fun iniciarSesion(user: String, password: String) {
+    FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password)
+}
+
 @Composable
-fun noCuenta() {
+fun noCuenta(controller: NavController) {
     Row {
         Text(text = "¿No tienes cuenta?")
         Text(
             text = "Registrate",
-            modifier = Modifier.clickable { true },
+            modifier = Modifier.clickable { controller.navigate(route = AppScreens.REGISTER_SCREEN.ruta) },
             color = Color.Blue
         )
     }
 }
+
+/*
+fun iniciarSesion(user: String, password: String) {
+    FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).addOnCompleteListener {
+        if (it.isSuccessful) {
+            appPrinciapl(email = it.result?.user?.email ?: "")
+        } else {
+            mensajeError()
+        }
+    }
+}
+
+fun mensajeError(){
+    val builder = AlertDialog.Builder(this)
+    builder.setTitle("Error")
+    builder.setMessage("Se ha produciodo un error")
+    builder.setPositiveButton("Aceptar", null)
+    val dialog: AlertDialog = builder.create()
+    dialog.show()
+}
+
+fun appPrinciapl(email : String){
+    val homePage = Intent(this, MainActivity::class.java).apply {
+        putExtra("email", email)
+    }
+    startActivity(homePage)
+}
+*/

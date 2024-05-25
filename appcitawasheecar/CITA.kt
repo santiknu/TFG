@@ -264,7 +264,6 @@ fun datosCliente() {
         onValueChange = { telefono = it },
         label = { Text("Teléfono") }
     )
-
 }
 
 @Composable

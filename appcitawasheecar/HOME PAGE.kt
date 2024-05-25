@@ -52,14 +52,6 @@ import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 
-/*enum class WasheeCarApp() {
-    HOME,
-    INICIO_SESION,
-    CITA,
-    PERFIL,
-    SERVICIOS
-}*/
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaHome(controller: NavController) {
@@ -187,7 +179,7 @@ fun botonCita(controller: NavController) {
 @Composable
 fun botonRegistrarse(controller: NavController) {
     Button(
-        onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) },
+        onClick = { controller.navigate(route = AppScreens.REGISTER_SCREEN.ruta) },
         modifier = Modifier
             .width(250.dp)
             .height(40.dp),

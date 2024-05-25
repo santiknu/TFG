@@ -8,6 +8,7 @@ import com.example.appcitawasheecar.screens.CitaScreen
 import com.example.appcitawasheecar.screens.HomeScreen
 import com.example.appcitawasheecar.screens.InicioScreen
 import com.example.appcitawasheecar.screens.PerfilScreen
+import com.example.appcitawasheecar.screens.RegistroScreen
 import com.example.appcitawasheecar.screens.ServiciosScreen
 
 @Composable
@@ -29,8 +30,20 @@ fun Navigation() {
         composable(route = AppScreens.SERVICIOS_SCREEN.ruta){
             ServiciosScreen(navController)
         }
-        /*composable(route = AppScreens.REGISTER_SCREEN.ruta){
-
-        }*/
+        composable(route = AppScreens.REGISTER_SCREEN.ruta){
+            RegistroScreen(controller = navController)
+        }
     }
 }
+
+/*
+@Composable
+fun NavigationInicioSesion() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = AppScreens.HOME_SCREEN.ruta) {
+        composable(route = AppScreens.LOGIN_SCREEN.ruta) {
+            InicioScreen(navController)
+        }
+    }
+}
+*/

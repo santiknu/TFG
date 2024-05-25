@@ -1,5 +1,6 @@
 package com.example.appcitawasheecar
 
+import android.provider.CalendarContract.Instances
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 
 @Composable
 fun logo(){
@@ -55,6 +58,12 @@ fun logoPNG(){
 @Composable
 fun spacer(espacio : Int){
     Spacer(modifier = Modifier.padding(espacio.dp))
+}
+
+@Composable
+fun BD() : FirebaseApp {
+    val BD = FirebaseApp.getInstance()
+    return BD
 }
 
 //-----------------ESTRUCTURA BASE DE APP------------------------
