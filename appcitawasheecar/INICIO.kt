@@ -1,7 +1,7 @@
 package com.example.appcitawasheecar
 
 import android.app.AlertDialog
-import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -38,12 +38,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -54,10 +56,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaInicioSesion(controller: NavController) {
+
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    if (auth.currentUser != null) {
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+    }
 
     var user by remember { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -82,7 +91,7 @@ fun pantallaInicioSesion(controller: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.PERFIL_SCREEN.ruta) }) {
+                    IconButton(onClick = { controller.navigate(ruta) }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
@@ -149,19 +158,7 @@ fun pantallaInicioSesion(controller: NavController) {
             ) {
                 logo()
             }
-            Row(modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)) {
-                campoUser()
-            }
-            Row {
-                CampoContraseña()
-            }
-            Row(
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(top = 30.dp)
-            ) {
-                botonLogIn(controller, user = user, password = password)
-            }
+            iniciarSesion(controller = controller)
             spacer(espacio = 20)
             Row(
                 modifier = Modifier
@@ -175,13 +172,157 @@ fun pantallaInicioSesion(controller: NavController) {
 }
 
 @Composable
+fun noCuenta(controller: NavController) {
+    Row {
+        Text(text = "¿No tienes cuenta?")
+        Text(
+            text = "Registrate",
+            modifier = Modifier.clickable { controller.navigate(route = AppScreens.REGISTER_SCREEN.ruta) },
+            color = Color.Blue
+        )
+    }
+}
+
+@Composable
+fun iniciarSesion(controller: NavController) {
+
+    var enabledUser by rememberSaveable { mutableStateOf(false) }
+    var user by rememberSaveable { mutableStateOf("") }
+    var passw by rememberSaveable { mutableStateOf("") }
+    var enabledPassw by rememberSaveable { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    Row(modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)) {
+        TextField(
+            value = user,
+            onValueChange = { enabledUser = true; user = it },
+            placeholder = { Text(text = "Email", color = Color.Gray) },
+            shape = MaterialTheme.shapes.small,
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                focusedContainerColor = Color(247, 237, 237, 255),
+                unfocusedContainerColor = Color(247, 237, 237, 255),
+                cursorColor = Color.Black
+            ),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+            modifier = Modifier
+                .size(325.dp, 50.dp)
+                .background(color = Color.White)
+        )
+    }
+    Row {
+
+        TextField(
+            value = passw,
+            onValueChange = { enabledPassw = true; passw = it },
+            placeholder = { Text(text = "Contraseña", color = Color.Gray) },
+            shape = MaterialTheme.shapes.small,
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                focusedContainerColor = Color(247, 237, 237, 255),
+                unfocusedContainerColor = Color(247, 237, 237, 255),
+                cursorColor = Color.Black
+            ),
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        painter = painterResource(
+                            if (passwordVisible) {
+                                R.drawable.ojovisible
+                            } else {
+                                R.drawable.ojoinvisible
+                            }
+                        ),
+                        contentDescription = null,
+                        tint = Color.Gray,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            singleLine = true,
+
+            modifier = Modifier
+                .size(325.dp, 50.dp)
+                .background(color = Color.Transparent)
+        )
+    }
+    Row(
+        modifier = Modifier
+            //.align(Alignment.End)
+            .padding(top = 30.dp)
+    ) {
+        Button(
+            onClick = {
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(user, passw)
+                    .addOnCompleteListener {
+                        if (it.isSuccessful) {
+                            Toast.makeText(
+                                context,
+                                "Bienvenido",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
+                        } else {
+                            val builder = AlertDialog.Builder(context)
+                            builder.setTitle("Error")
+                            builder.setMessage("Se ha produciodo un error")
+                            builder.setPositiveButton("Aceptar", null)
+                            val dialog: AlertDialog = builder.create()
+                            dialog.show()
+                            Toast.makeText(
+                                context,
+                                "Usuario o contraseña incorrectos",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent, contentColor = Color.Blue
+            )
+        ) {
+            Text(text = "Entrar")
+        }
+    }
+}
+/*
+fun iniciarSesionFirebase(user: String, password: String): Boolean {
+    var confirmado = false;
+    FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).addOnCompleteListener {
+        if (it.isSuccessful) {
+            confirmado = true
+        }
+    }
+    return confirmado
+}
+
+suspend fun iniciarSesionFirebaseSuspend(user: String, password: String): Boolean {
+    return try {
+        val authResult =
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).await()
+        authResult.user != null
+    } catch (e: Exception) {
+        false
+    }
+}
+*/
+/*
+@Composable
 fun campoUser() {
     var enabled by rememberSaveable { mutableStateOf(false) }
-    var texto by rememberSaveable { mutableStateOf("")}
+    var user by rememberSaveable { mutableStateOf("") }
     TextField(
-        value = texto,
-        onValueChange = {enabled = true ; texto = it },
-        placeholder = { Text(text = "Email o numero de telefono", color = Color.Gray) },
+        value = user,
+        onValueChange = { enabled = true; user = it },
+        placeholder = { Text(text = "Email", color = Color.Gray) },
         shape = MaterialTheme.shapes.small,
         colors = TextFieldDefaults.colors(
             focusedTextColor = Color.Black,
@@ -198,15 +339,15 @@ fun campoUser() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CampoContraseña() {
+fun campoContraseña() {
 
-    var texto by rememberSaveable { mutableStateOf("") }
+    var passw by rememberSaveable { mutableStateOf("") }
     var enabled by rememberSaveable { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
 
     TextField(
-        value = texto,
-        onValueChange = { enabled = true ; texto = it },
+        value = passw,
+        onValueChange = { enabled = true; passw = it },
         placeholder = { Text(text = "Contraseña", color = Color.Gray) },
         shape = MaterialTheme.shapes.small,
         colors = TextFieldDefaults.colors(
@@ -246,10 +387,12 @@ fun CampoContraseña() {
 }
 
 @Composable
-fun botonLogIn(controller: NavController, user: String, password: String) {
+fun botonLogIn(controller: NavController, user: String, passw: String) {
+
+    var conf = false
 
     Button(
-        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) ; iniciarSesion(user, password)},
+        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta); conf = iniciarSesionFirebase(user, passw)},
         modifier = Modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent, contentColor = Color.Blue
@@ -259,46 +402,20 @@ fun botonLogIn(controller: NavController, user: String, password: String) {
     }
 }
 
-fun iniciarSesion(user: String, password: String) {
-    FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password)
-}
-
 @Composable
-fun noCuenta(controller: NavController) {
-    Row {
-        Text(text = "¿No tienes cuenta?")
-        Text(
-            text = "Registrate",
-            modifier = Modifier.clickable { controller.navigate(route = AppScreens.REGISTER_SCREEN.ruta) },
-            color = Color.Blue
-        )
-    }
-}
-
-/*
-fun iniciarSesion(user: String, password: String) {
-    FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).addOnCompleteListener {
-        if (it.isSuccessful) {
-            appPrinciapl(email = it.result?.user?.email ?: "")
-        } else {
-            mensajeError()
+fun errorMssg() {
+    val openAlertDialog = remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = { openAlertDialog.value = false },
+        buttons = {
+            TextButton(onClick = { openAlertDialog.value = false }) {
+                Text("Confirm")
+            }
+            TextButton(onClick = { openAlertDialog.value = false }) {
+                Text("Dismiss")
+            }
         }
-    }
+    )
 }
 
-fun mensajeError(){
-    val builder = AlertDialog.Builder(this)
-    builder.setTitle("Error")
-    builder.setMessage("Se ha produciodo un error")
-    builder.setPositiveButton("Aceptar", null)
-    val dialog: AlertDialog = builder.create()
-    dialog.show()
-}
-
-fun appPrinciapl(email : String){
-    val homePage = Intent(this, MainActivity::class.java).apply {
-        putExtra("email", email)
-    }
-    startActivity(homePage)
-}
 */

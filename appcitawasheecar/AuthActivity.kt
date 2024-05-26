@@ -29,16 +29,17 @@ class AuthActivity : ComponentActivity() {
     }
 
     fun iniciarSesion(user: String, password: String) {
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).addOnCompleteListener {
-            if (it.isSuccessful) {
-                appPrinciapl(email = it.result?.user?.email ?: "")
-            } else {
-                mensajeError()
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    appPrinciapl(email = it.result?.user?.email ?: "")
+                } else {
+                    mensajeError()
+                }
             }
-        }
     }
 
-    fun mensajeError(){
+    fun mensajeError() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Error")
         builder.setMessage("Se ha produciodo un error")
@@ -47,7 +48,7 @@ class AuthActivity : ComponentActivity() {
         dialog.show()
     }
 
-    fun appPrinciapl(email : String){
+    fun appPrinciapl(email: String) {
         val homePage = Intent(this, MainActivity::class.java).apply {
             putExtra("email", email)
         }

@@ -51,10 +51,19 @@ import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaHome(controller: NavController) {
+
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    if (auth.currentUser != null){
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+    }
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -75,7 +84,7 @@ fun pantallaHome(controller: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                    IconButton(onClick = { controller.navigate(route = ruta) }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,

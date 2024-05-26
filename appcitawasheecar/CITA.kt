@@ -45,6 +45,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -60,6 +62,12 @@ fun pantallaCita(controller: NavController) {
     var horaSeleccionada by remember { mutableStateOf<String?>(null) }
     var servicioSeleccionado by remember { mutableStateOf<String?>(null) }
     var pulsadoAñadirServicio by remember { mutableStateOf(false) }
+
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    if (auth.currentUser != null) {
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -78,7 +86,7 @@ fun pantallaCita(controller: NavController) {
                     )
                 },
                 actions = {
-                    androidx.compose.material3.IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                    androidx.compose.material3.IconButton(onClick = { controller.navigate(route = ruta) }) {
                         androidx.compose.material3.Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
@@ -194,7 +202,6 @@ fun pantallaCita(controller: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun datosCoche() {
-
     var matricula by remember { mutableStateOf("") }
     var marca by remember { mutableStateOf("") }
     var modelo by remember { mutableStateOf("") }
@@ -238,39 +245,100 @@ fun datosCoche() {
 @Composable
 fun datosCliente() {
 
-    var nombre by remember { mutableStateOf("") }
-    var telefono by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
+    val BD = FirebaseFirestore.getInstance("default")
+    val userActual = auth.currentUser
 
-    Text(
-        "Información del cliente", modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp)
-    )
-    spacer(espacio = 5)
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        value = nombre,
-        onValueChange = { nombre = it },
-        label = { Text("Nombre") }
-    )
-    spacer(espacio = 3)
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        value = telefono,
-        onValueChange = { telefono = it },
-        label = { Text("Teléfono") }
-    )
+
+    if (userActual != null) {
+        var email = userActual.email
+        var nombre = ""
+        var telefono = ""
+        email?.let {
+            BD.collection("usuarios").document(it).get().addOnSuccessListener { it->
+                nombre = it.get("nombre").toString()
+                telefono = it.get("telefono").toString()
+            }
+        }
+        Text(
+            "Información del cliente", modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp)
+        )
+        spacer(espacio = 5)
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp),
+            value = nombre,
+            onValueChange = { nombre = it },
+            label = { Text("Nombre") }
+        )
+        spacer(espacio = 3)
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp),
+            value = telefono,
+            onValueChange = { telefono = it },
+            label = { Text("Teléfono") }
+        )
+        spacer(espacio = 3)
+        if (email != null) {
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") }
+            )
+        }
+    } else {
+        var nombre by remember { mutableStateOf("") }
+        var telefono by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
+
+        Text(
+            "Información del cliente", modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp)
+        )
+        spacer(espacio = 5)
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp),
+            value = nombre,
+            onValueChange = { nombre = it },
+            label = { Text("Nombre") }
+        )
+        spacer(espacio = 3)
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp),
+            value = telefono,
+            onValueChange = { telefono = it },
+            label = { Text("Teléfono") }
+        )
+        spacer(espacio = 3)
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp),
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") }
+        )
+    }
 }
 
 @Composable
 fun botonConfirmarCita() {
 
     Button(
-        onClick = {/**/ },
+        onClick = {/* */},
         modifier = Modifier
             .height(40.dp)
             .width(250.dp),

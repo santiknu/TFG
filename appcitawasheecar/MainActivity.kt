@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import com.example.appcitawasheecar.navigation.Navigation
 import com.example.appcitawasheecar.ui.theme.AppCitaWasheeCarTheme
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

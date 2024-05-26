@@ -55,6 +55,12 @@ fun pantallaRegistro(controller: NavController) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    if (auth.currentUser != null) {
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -72,7 +78,7 @@ fun pantallaRegistro(controller: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                    IconButton(onClick = { controller.navigate(ruta) }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
@@ -134,20 +140,32 @@ fun pantallaRegistro(controller: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            RegisterScreen()
+            //RegisterScreen()
         }
     }
 }
 
 
+fun registrarUsuarioActual(user: String, password: String): Boolean {
+    var confirmado = false;
+    FirebaseAuth.getInstance().createUserWithEmailAndPassword(user, password)
+        .addOnCompleteListener {
+            if (it.isSuccessful) {
+                confirmado = true
+            }
+        }
+    return confirmado
+}
+
+/*
 @Composable
 fun RegisterScreen() {
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var vehiculos by remember { mutableStateOf(listOf(vehiculo("","",""))) }
+    var vehiculo by remember { mutableStateOf(listOf(vehiculo("","",""))) }
     val coroutineScope = rememberCoroutineScope()
-    val isDataComplete = vehiculos.all { it.marca.isNotEmpty() && it.modelo.isNotEmpty() && it.matricula.isNotEmpty() }
+    val isDataComplete = vehiculo.all { it.marca.isNotEmpty() && it.modelo.isNotEmpty() && it.matricula.isNotEmpty() }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Registro de Usuario", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(bottom = 16.dp))
@@ -158,40 +176,34 @@ fun RegisterScreen() {
         EditableField(label = "Email (Opcional)", value = email, onValueChange = { email = it }, keyboardType = KeyboardType.Email)
 
         Text(text = "Vehículos", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 8.dp))
-        vehiculos.forEachIndexed { index, vehiculo ->
+        vehiculo.forEachIndexed { index, vehiculo ->
             VehiculoField(vehiculo, onValueChange = { updatedVehiculo ->
-                vehiculos = vehiculos.toMutableList().also { it[index] = updatedVehiculo }
+                vehiculo = vehiculo.toMutableList().also { it[index] = updatedVehiculo }
             })
         }
-
-        if (isDataComplete) {
-            Button(
-                onClick = {
-                    vehiculos = vehiculos + vehiculo("","","")
-                },
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                Text("Añadir otro vehículo")
-            }
-        }
-
+        
         Button(
             onClick = {
                 coroutineScope.launch {
-                    registerUser(nombre, telefono, email, vehiculos)
+                    registerUser(nombre, telefono, email, vehiculo)
                 }
             },
-            enabled = nombre.isNotEmpty() && telefono.isNotEmpty() && vehiculos.isNotEmpty() && isDataComplete,
+            enabled = nombre.isNotEmpty() && telefono.isNotEmpty() && vehiculo.isNotEmpty() && isDataComplete,
             modifier = Modifier.padding(vertical = 16.dp)
         ) {
             Text("Guardar")
         }
     }
 }
+*/
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditableField(label: String, value: String, onValueChange: (String) -> Unit, keyboardType: KeyboardType = KeyboardType.Text) {
+fun EditableField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
         TextField(
@@ -199,12 +211,7 @@ fun EditableField(label: String, value: String, onValueChange: (String) -> Unit,
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .background(
-                    MaterialTheme.colorScheme.background,
-                    shape = MaterialTheme.shapes.small
-                )
-                .padding(8.dp),
+                .padding(start = 10.dp, end = 10.dp),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType)
         )
     }
@@ -213,13 +220,22 @@ fun EditableField(label: String, value: String, onValueChange: (String) -> Unit,
 @Composable
 fun VehiculoField(vehiculo: vehiculo, onValueChange: (vehiculo) -> Unit) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        EditableField(label = "Marca", value = vehiculo.marca, onValueChange = { onValueChange(vehiculo.copy(marca = it)) })
-        EditableField(label = "Modelo", value = vehiculo.modelo, onValueChange = { onValueChange(vehiculo.copy(modelo = it)) })
-        EditableField(label = "Matrícula", value = vehiculo.matricula, onValueChange = { onValueChange(vehiculo.copy(matricula = it)) })
+        EditableField(
+            label = "Marca",
+            value = vehiculo.marca,
+            onValueChange = { onValueChange(vehiculo.copy(marca = it)) })
+        EditableField(
+            label = "Modelo",
+            value = vehiculo.modelo,
+            onValueChange = { onValueChange(vehiculo.copy(modelo = it)) })
+        EditableField(
+            label = "Matrícula",
+            value = vehiculo.matricula,
+            onValueChange = { onValueChange(vehiculo.copy(matricula = it)) })
     }
 }
 
-suspend fun registerUser(nombre: String, telefono: String, email: String, vehiculos: List<vehiculo>) {
+suspend fun registerUser(nombre: String, telefono: String, email: String, vehiculo: vehiculo) {
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
@@ -229,8 +245,8 @@ suspend fun registerUser(nombre: String, telefono: String, email: String, vehicu
             nombre = nombre,
             telefono = telefono,
             email = email,
-            lavados  = 0,
-            vehiculos = vehiculos
+            lavados = 0,
+            vehiculo = vehiculo.matricula
         )
         db.collection("users").document(user.uid).set(userData).await()
     }

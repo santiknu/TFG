@@ -35,9 +35,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,15 +51,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 //-----------------------------CLASES-----------------------------------
 
 data class usuario(
-    val nombre: String,
-    val telefono: String,
-    val email: String,
-    val lavados: Int,
-    val vehiculos: List<vehiculo>
+    val nombre: String?,
+    val telefono: String?,
+    val email: String?,
+    val lavados: Int?,
+    val vehiculo: String?
 )
 
 data class vehiculo(
@@ -71,6 +77,24 @@ data class vehiculo(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaPerfil(controller: NavController) {
+
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    if (auth.currentUser != null) {
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+    }
+
+    /*val currentUser = auth.currentUser
+    val userId = currentUser?.uid ?: ""
+    var user by remember { mutableStateOf<usuario?>(null) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            val userData = getUserData(userId)
+            user = userData
+        }
+    }*/
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -91,7 +115,7 @@ fun pantallaPerfil(controller: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                    IconButton(onClick = { controller.navigate(route = ruta) }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
@@ -153,42 +177,25 @@ fun pantallaPerfil(controller: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            UserProfileScreen()
+            /*if (user != null) {
+                Text(text = "Nombre: ${user!!.nombre}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Email: ${user!!.email}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Teléfono: ${user!!.telefono}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Lavados: ${user!!.lavados}", style = MaterialTheme.typography.bodySmall)
+            } else {
+                Text(text = "Cargando...", style = MaterialTheme.typography.labelMedium)
+            }*/
+            recuperarDatosUsusarioActual(controller)
         }
     }
 }
 
-@Composable
-fun datosUser() {
-    Column(modifier = Modifier.padding(8.dp)) {
-        Text(
-            text = "Nombre",
-            modifier = Modifier
-        )
-        Text(
-            text = "Telefono",
-            modifier = Modifier
-        )
-        Text(
-            text = "Email",
-            modifier = Modifier
-        )
-        Text(
-            text = "Lavados",
-            modifier = Modifier
-        )
-    }
-}
 
 @Composable
-fun datosCar() {
-
-}
-
-@Composable
-fun botonCerrarSesion() {
+fun botonCerrarSesion(controller: NavController) {
+    val auth = FirebaseAuth.getInstance()
     Button(
-        onClick = { },
+        onClick = { auth.signOut(); controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
             contentColor = Color.Blue
@@ -199,31 +206,173 @@ fun botonCerrarSesion() {
 }
 
 @Composable
-fun botonEditarGuardar(editar: Boolean) {
-    var editable = editar
-    Button(
-        onClick = { editable = !editable },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            contentColor = Color.Blue
+fun recuperarDatosUsusarioActual(controller: NavController) {
+
+    var BD = FirebaseFirestore.getInstance("default")
+    var editable by remember { mutableStateOf(false) }
+
+    var email = FirebaseAuth.getInstance().currentUser?.email
+    var nombre = ""
+    var telefono = ""
+    var lavados = 0
+    var vehiculos: List<vehiculo>? = null
+
+    var matricula = ""
+    var marca: String
+    var modelo: String
+    var vehiculo: vehiculo? = null
+
+    if (email != null) {
+        nombre = "Manolo"
+        telefono = "1234"
+        BD.collection("usuarios").document(email).get().addOnSuccessListener {
+            nombre = "Juan y medio"
+            nombre = it.get("nombre").toString()
+            telefono = it.get("telefono").toString()
+            lavados = it.get("lavados").toString().toInt()
+            matricula = it.get("vehiculo").toString()
+
+            BD.collection("vehiculos").document(matricula).get().addOnSuccessListener { itV ->
+                marca = itV.get("marca").toString()
+                modelo = itV.get("modelo").toString()
+                vehiculo = vehiculo(marca, modelo, matricula)
+            }
+        }
+    }
+
+
+    //var userActual by remember { mutableStateOf(usuario(nombre, telefono, email, lavados, vehiculos))}
+    var userActual = usuario(nombre, telefono, email, lavados, matricula)
+
+
+
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        userActual.nombre?.let {
+            campoEditable(
+                label = "Nombre",
+                value = it,
+                editable
+            ) {
+                userActual = userActual.copy(nombre = it)
+            }
+        }
+        userActual.telefono?.let {
+            campoEditable(
+                label = "Teléfono",
+                value = it,
+                editable,
+                keyboardType = KeyboardType.Phone
+            ) {
+                userActual = userActual.copy(telefono = it)
+            }
+        }
+        userActual.email?.let {
+            campoEditable(
+                label = "Email",
+                value = it,
+                editable,
+                keyboardType = KeyboardType.Email
+            ) {
+                userActual = userActual.copy(email = it)
+            }
+        }
+        Text(
+            text = "Cantidad de Lavados: ${userActual.lavados}",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(vertical = 8.dp)
         )
-    ) {
-        Text(text = if (editable) "Guardar" else "Editar")
+
+
+        vehiculo?.let { infoVehiculo(it) }
+
+
+        Row {
+            Button(
+                onClick = { editable = !editable },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.Blue
+                )
+            ) {
+                Text(
+                    text =
+                    if (editable)
+                        "Guardar"
+                    else
+                        "Editar"
+                )
+            }
+            spacer(espacio = 16)
+            botonCerrarSesion(controller)
+        }
+    }
+}
+
+@Composable
+fun campoEditable(
+    label: String,
+    value: String,
+    editable: Boolean,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    onValueChange: (String) -> Unit
+) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        if (editable) {
+            TextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType)
+            )
+        } else {
+            Text(
+                text = value,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun infoVehiculo(vehiculo: vehiculo) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(text = "Matrícula: ${vehiculo.matricula}")
+        Text(text = "Marca: ${vehiculo.marca}")
+        Text(text = "Modelo: ${vehiculo.modelo}")
     }
 }
 
 //------------------------------------------------------
+/*
+suspend fun getUserData(userId: String): usuario? {
+    val firestore = FirebaseFirestore.getInstance()
+    return try {
+        val document = firestore.collection("users").document(userId).get().await()
+        document.toObject(usuario::class.java)
+    } catch (e: Exception) {
+        null
+    }
+}
+*/
+/*
 @Composable
-fun UserProfileScreen() {
+fun UserProfileScreen(controller: NavController) {
+    var email = FirebaseAuth.getInstance().currentUser?.email
+    var nombre = email?.let { FirebaseFirestore.getInstance().collection("usuarios").document(it) }
+    var telefono = FirebaseAuth.getInstance().currentUser?.phoneNumber
     var editable by remember { mutableStateOf(false) }
-    var userData by remember {
+    var userActual by remember {
         mutableStateOf(
-            UserData(
-                nombre = "Juan Pérez",
-                telefono = "123-456-7890",
-                email = "juan.perez@example.com",
-                cantidadLavados = 5,
-                vehiculos = listOf(
+            usuario(
+                nombre,
+                telefono,
+                email,
+                5,
+                listOf(
                     vehiculo(marca = "Toyota", modelo = "Corolla", matricula = "ABC-1234"),
                     vehiculo(marca = "Honda", modelo = "Civic", matricula = "XYZ-5678")
                 )
@@ -238,27 +387,37 @@ fun UserProfileScreen() {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        EditableField(label = "Nombre", value = userData.nombre, isEditing = editable) {
-            userData = userData.copy(nombre = it)
+        userActual.nombre?.let {
+            EditableField(
+                label = "Nombre",
+                value = it,
+                isEditing = editable
+            ) {
+                userActual = userActual.copy(nombre = it)
+            }
         }
-        EditableField(
-            label = "Teléfono",
-            value = userData.telefono,
-            isEditing = editable,
-            keyboardType = KeyboardType.Phone
-        ) {
-            userData = userData.copy(telefono = it)
+        userActual.telefono?.let {
+            EditableField(
+                label = "Teléfono",
+                value = it,
+                isEditing = editable,
+                keyboardType = KeyboardType.Phone
+            ) {
+                userActual = userActual.copy(telefono = it)
+            }
         }
-        EditableField(
-            label = "Email",
-            value = userData.email,
-            isEditing = editable,
-            keyboardType = KeyboardType.Email
-        ) {
-            userData = userData.copy(email = it)
+        userActual.email?.let {
+            EditableField(
+                label = "Email",
+                value = it,
+                isEditing = editable,
+                keyboardType = KeyboardType.Email
+            ) {
+                userActual = userActual.copy(email = it)
+            }
         }
         Text(
-            text = "Cantidad de Lavados: ${userData.cantidadLavados}",
+            text = "Cantidad de Lavados: ${userActual.lavados}",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -268,65 +427,32 @@ fun UserProfileScreen() {
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(vertical = 8.dp)
         )
-        userData.vehiculos.forEach { vehiculo ->
+        userActual.vehiculos.forEach { vehiculo ->
             VehiculoInfo(vehiculo)
         }
 
         spacer(espacio = 16)
 
         Row {
-            botonEditarGuardar(editar = editable)
+            Button(
+                onClick = { editable = !editable },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = Color.Blue
+                )
+            ) {
+                Text(
+                    text =
+                    if (editable)
+                        "Guardar"
+                    else
+                        "Editar"
+                )
+            }
             spacer(espacio = 16)
-            botonCerrarSesion()
+            botonCerrarSesion(controller)
         }
     }
 }
+*/
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun EditableField(
-    label: String,
-    value: String,
-    isEditing: Boolean,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    onValueChange: (String) -> Unit
-) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
-        if (isEditing) {
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .background(Color.Blue, shape = MaterialTheme.shapes.small)
-                    .padding(8.dp),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType)
-            )
-        } else {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun VehiculoInfo(vehiculo: vehiculo) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = "Marca: ${vehiculo.marca}", style = MaterialTheme.typography.bodyLarge)
-        Text(text = "Modelo: ${vehiculo.modelo}", style = MaterialTheme.typography.bodySmall)
-        Text(text = "Matrícula: ${vehiculo.matricula}", style = MaterialTheme.typography.bodySmall)
-    }
-}
-
-data class UserData(
-    val nombre: String,
-    val telefono: String,
-    val email: String,
-    val cantidadLavados: Int,
-    val vehiculos: List<vehiculo>
-)
