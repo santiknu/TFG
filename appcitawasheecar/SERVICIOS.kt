@@ -46,12 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaServicios(controller: NavController) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    if (auth.currentUser != null) {
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -70,7 +77,7 @@ fun pantallaServicios(controller: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
+                    IconButton(onClick = { controller.navigate(ruta)}) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,

@@ -63,7 +63,7 @@ data class usuario(
     val telefono: String?,
     val email: String?,
     val lavados: Int?,
-    val vehiculo: String?
+    //val vehiculo: String?
 )
 
 data class vehiculo(
@@ -177,14 +177,16 @@ fun pantallaPerfil(controller: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            /*if (user != null) {
+            /* prueba para ver si devuelve datos del usuario
+            if (user != null) {
                 Text(text = "Nombre: ${user!!.nombre}", style = MaterialTheme.typography.bodySmall)
                 Text(text = "Email: ${user!!.email}", style = MaterialTheme.typography.bodySmall)
                 Text(text = "Teléfono: ${user!!.telefono}", style = MaterialTheme.typography.bodySmall)
                 Text(text = "Lavados: ${user!!.lavados}", style = MaterialTheme.typography.bodySmall)
             } else {
                 Text(text = "Cargando...", style = MaterialTheme.typography.labelMedium)
-            }*/
+            }
+            */
             recuperarDatosUsusarioActual(controller)
         }
     }
@@ -212,16 +214,16 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
     var editable by remember { mutableStateOf(false) }
 
     var email = FirebaseAuth.getInstance().currentUser?.email
-    var nombre = ""
-    var telefono = ""
+    var nombre by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
     var lavados = 0
     var vehiculos: List<vehiculo>? = null
-
+    /*
     var matricula = ""
     var marca: String
     var modelo: String
     var vehiculo: vehiculo? = null
-
+    */
     if (email != null) {
         nombre = "Manolo"
         telefono = "1234"
@@ -230,22 +232,17 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
             nombre = it.get("nombre").toString()
             telefono = it.get("telefono").toString()
             lavados = it.get("lavados").toString().toInt()
-            matricula = it.get("vehiculo").toString()
-
+            /*matricula = it.get("vehiculo").toString()
             BD.collection("vehiculos").document(matricula).get().addOnSuccessListener { itV ->
                 marca = itV.get("marca").toString()
                 modelo = itV.get("modelo").toString()
                 vehiculo = vehiculo(marca, modelo, matricula)
-            }
+            }*/
         }
     }
 
-
     //var userActual by remember { mutableStateOf(usuario(nombre, telefono, email, lavados, vehiculos))}
-    var userActual = usuario(nombre, telefono, email, lavados, matricula)
-
-
-
+    var userActual = usuario(nombre, telefono, email, lavados/*, matricula*/)
 
     Column(modifier = Modifier.padding(16.dp)) {
         userActual.nombre?.let {
@@ -279,24 +276,30 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
         }
         Text(
             text = "Cantidad de Lavados: ${userActual.lavados}",
-            style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
 
-        vehiculo?.let { infoVehiculo(it) }
+        //vehiculo?.let { infoVehiculo(it) }
 
 
         Row {
             Button(
-                onClick = { editable = !editable },
+                onClick = {
+                    editable = !editable;
+                    if (editable) {
+                        val datosUserNuevos = usuario(nombre, telefono, email, lavados = 0)
+                        datosUserNuevos.email?.let {
+                            BD.collection("usuarios").document(it).set(datosUserNuevos)
+                        }
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color.Blue
                 )
             ) {
                 Text(
-                    text =
                     if (editable)
                         "Guardar"
                     else
@@ -334,15 +337,6 @@ fun campoEditable(
                 modifier = Modifier.padding(vertical = 4.dp)
             )
         }
-    }
-}
-
-@Composable
-fun infoVehiculo(vehiculo: vehiculo) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = "Matrícula: ${vehiculo.matricula}")
-        Text(text = "Marca: ${vehiculo.marca}")
-        Text(text = "Modelo: ${vehiculo.modelo}")
     }
 }
 
@@ -455,4 +449,13 @@ fun UserProfileScreen(controller: NavController) {
     }
 }
 */
-
+/*
+@Composable
+fun infoVehiculo(vehiculo: vehiculo) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(text = "Matrícula: ${vehiculo.matricula}")
+        Text(text = "Marca: ${vehiculo.marca}")
+        Text(text = "Modelo: ${vehiculo.modelo}")
+    }
+}
+*/

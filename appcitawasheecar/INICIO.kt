@@ -64,8 +64,10 @@ fun pantallaInicioSesion(controller: NavController) {
 
     val auth = FirebaseAuth.getInstance()
     var ruta = AppScreens.LOGIN_SCREEN.ruta
+    var ruta2 = AppScreens.REGISTER_SCREEN.ruta
     if (auth.currentUser != null) {
         ruta = AppScreens.PERFIL_SCREEN.ruta
+        ruta2 = AppScreens.PERFIL_SCREEN.ruta
     }
 
     var user by remember { mutableStateOf("") }
@@ -165,19 +167,19 @@ fun pantallaInicioSesion(controller: NavController) {
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 30.dp, bottom = 10.dp)
             ) {
-                noCuenta(controller = controller)
+                noCuenta(controller = controller, ruta2)
             }
         }
     }
 }
 
 @Composable
-fun noCuenta(controller: NavController) {
+fun noCuenta(controller: NavController, ruta : String) {
     Row {
         Text(text = "¿No tienes cuenta?")
         Text(
             text = "Registrate",
-            modifier = Modifier.clickable { controller.navigate(route = AppScreens.REGISTER_SCREEN.ruta) },
+            modifier = Modifier.clickable { controller.navigate(ruta) },
             color = Color.Blue
         )
     }
@@ -266,14 +268,14 @@ fun iniciarSesion(controller: NavController) {
                             Toast.makeText(
                                 context,
                                 "Bienvenido",
-                                Toast.LENGTH_SHORT
+                                Toast.LENGTH_LONG
                             ).show()
                             controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
                         } else {
                             val builder = AlertDialog.Builder(context)
                             builder.setTitle("Error")
                             builder.setMessage("Se ha produciodo un error")
-                            builder.setPositiveButton("Aceptar", null)
+                            builder.setPositiveButton("Reintentar", null)
                             val dialog: AlertDialog = builder.create()
                             dialog.show()
                             Toast.makeText(

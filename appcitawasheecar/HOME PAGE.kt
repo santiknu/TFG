@@ -60,8 +60,10 @@ fun pantallaHome(controller: NavController) {
 
     val auth = FirebaseAuth.getInstance()
     var ruta = AppScreens.LOGIN_SCREEN.ruta
+    var ruta2 = AppScreens.REGISTER_SCREEN.ruta
     if (auth.currentUser != null){
         ruta = AppScreens.PERFIL_SCREEN.ruta
+        ruta2 = AppScreens.PERFIL_SCREEN.ruta
     }
 
     val scrollBehavior =
@@ -155,7 +157,7 @@ fun pantallaHome(controller: NavController) {
             }
             spacer(espacio = 10)
             Row {
-                botonRegistrarse(controller)
+                botonRegistrarse(controller, ruta2)
             }
             spacer(espacio = 20)
             Row {
@@ -186,9 +188,9 @@ fun botonCita(controller: NavController) {
 }
 
 @Composable
-fun botonRegistrarse(controller: NavController) {
+fun botonRegistrarse(controller: NavController, ruta2 : String) {
     Button(
-        onClick = { controller.navigate(route = AppScreens.REGISTER_SCREEN.ruta) },
+        onClick = { controller.navigate(ruta2) },
         modifier = Modifier
             .width(250.dp)
             .height(40.dp),

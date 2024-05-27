@@ -1,5 +1,7 @@
 package com.example.appcitawasheecar
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +49,7 @@ import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -184,8 +187,9 @@ fun pantallaCita(controller: NavController) {
                     eleccion = { servicio -> servicioSeleccionado = servicio })
             }
             spacer(espacio = 8)
-            Column() {
-                datosCliente()
+            Column {
+                //datosCliente()
+                datosCliente2()
             }
             spacer(espacio = 8)
             Column() {
@@ -199,7 +203,6 @@ fun pantallaCita(controller: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun datosCoche() {
     var matricula by remember { mutableStateOf("") }
@@ -241,7 +244,80 @@ fun datosCoche() {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/*@Composable
+fun datosCliente1() {
+    val auth = FirebaseAuth.getInstance()
+    val BD = FirebaseFirestore.getInstance("default")
+    val userActual = auth.currentUser
+
+
+    if (userActual != null) {
+        var email = userActual.email
+        var nombre = ""
+        var telefono = ""
+
+        val usuarioscollection = BD.collection("usuarios")
+        val query = email?.let { usuarioscollection.whereEqualTo(it, true) }
+        query?.get()?.addOnSuccessListener { document ->
+            val userDevuelto = document.toObject<usuario>()
+        }
+    }
+}*/
+
+@Composable
+fun datosCliente2() {
+    val auth = FirebaseAuth.getInstance()
+    val BD = FirebaseFirestore.getInstance("default")
+    val userActual = auth.currentUser
+    var userDevuelto = usuario("","","", 0)
+
+    if (userActual != null) {
+        val docRef = userActual.email?.let { BD.collection("usuarios").document(it) }
+        if (docRef != null) {
+            docRef.get().addOnSuccessListener { documentSnapshot ->
+                userDevuelto = documentSnapshot.toObject<usuario>()!!
+            }
+            userDevuelto.nombre?.let { Text(it) }
+            userDevuelto.email?.let { Text(it) }
+            userDevuelto.telefono?.let { Text(it) }
+            Text(userDevuelto.lavados.toString())
+        }
+    }
+
+
+    /*if (userActual != null) {
+        var email = userActual.email
+        var nombre = ""
+        var telefono = ""
+
+        val datosUserActual = email?.let { BD.collection("usuarios").document(it) }
+        datosUserActual?.get()?.addOnSuccessListener { documentSnapshot ->
+            userDevuelto = documentSnapshot.toObject<usuario>()!!//que no es nulo
+        }
+    }
+    return userDevuelto*/
+}
+
+@Composable
+fun datosClienteMia() {
+    val auth = FirebaseAuth.getInstance()
+    val BD = FirebaseFirestore.getInstance("default")
+    val userActual = auth.currentUser
+
+
+    if (userActual != null) {
+        var email = userActual.email
+        var nombre = ""
+        var telefono = ""
+        email?.let {
+            BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it ->
+                nombre = it.get("nombre").toString()
+                telefono = it.get("telefono").toString()
+            }
+        }
+    }
+}
+
 @Composable
 fun datosCliente() {
 
@@ -254,12 +330,30 @@ fun datosCliente() {
         var email = userActual.email
         var nombre = ""
         var telefono = ""
-        email?.let {
-            BD.collection("usuarios").document(it).get().addOnSuccessListener { it->
+        /*email?.let {
+            BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it->
                 nombre = it.get("nombre").toString()
                 telefono = it.get("telefono").toString()
             }
+        }*/
+
+        val usuarioscollection = BD.collection("usuarios")
+        val query = email?.let { usuarioscollection.whereEqualTo(it, true) }
+        query?.get()?.addOnSuccessListener { documents ->
+            for (document in documents) {
+                Log.d(TAG, "${document.id} => ${document.data}")
+            }
         }
+
+        val datosUserActual = email?.let { BD.collection("usuarios").document(it) }
+        datosUserActual?.get()?.addOnSuccessListener { document ->
+            if (document != null) {
+                Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+            } else {
+                Log.d(TAG, "No such document")
+            }
+        }
+
         Text(
             "Información del cliente", modifier = Modifier
                 .fillMaxWidth()
@@ -338,7 +432,7 @@ fun datosCliente() {
 fun botonConfirmarCita() {
 
     Button(
-        onClick = {/* */},
+        onClick = {/* */ },
         modifier = Modifier
             .height(40.dp)
             .width(250.dp),
@@ -437,10 +531,13 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
 
     var expandido by remember { mutableStateOf(false) }
     val serviciosInterior = getServiciosInterior()
+    /*
+    var serv: String? = null
     val serviciosInteriorCNombre = getServiciosInteriorCNombre()
     val serviciosSeleccionados = remember { mutableListOf<String>() }
-    var serv: String? = null
+
     var pulsedAñadirServicio = false
+    */
 
     Box {
         TextButton(
@@ -459,7 +556,7 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
             onDismissRequest = { expandido = false }
         ) {
             serviciosInterior.forEach { servicio ->
-                serv = servicio.nombre
+                //serv = servicio.nombre
                 DropdownMenuItem(
                     { Text(text = servicio.nombre) },
                     onClick = { expandido = false; eleccion(servicio.nombre) }
@@ -467,7 +564,7 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
             }
         }
     }
-    if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)) {
+    /*if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)) {
         Button(
             onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
             modifier = Modifier
@@ -486,7 +583,7 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
                 servicioSeleccionado = servicioSeleccionado,
                 eleccion = { servicio -> serv = servicio })
         }
-    }
+    }*/
 }
 
 
