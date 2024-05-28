@@ -48,8 +48,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
+import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
+import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -243,12 +250,13 @@ fun datosCoche() {
         label = { Text("Modelo") }
     )
 }
-
-/*@Composable
+/*
+@Composable
 fun datosCliente1() {
     val auth = FirebaseAuth.getInstance()
     val BD = FirebaseFirestore.getInstance("default")
     val userActual = auth.currentUser
+    var userDevuelto = usuario("", "", "", 0)
 
 
     if (userActual != null) {
@@ -257,34 +265,42 @@ fun datosCliente1() {
         var telefono = ""
 
         val usuarioscollection = BD.collection("usuarios")
-        val query = email?.let { usuarioscollection.whereEqualTo(it, true) }
-        query?.get()?.addOnSuccessListener { document ->
-            val userDevuelto = document.toObject<usuario>()
+        val query = email?.let { usuarioscollection.whereEqualTo("email", it) }
+        query?.get()?.addOnSuccessListener { documentSnapshot ->
+            userDevuelto = documentSnapshot.toObjects<usuario>(usuario.class)
         }
     }
-}*/
-
+}
+*/
 @Composable
 fun datosCliente2() {
     val auth = FirebaseAuth.getInstance()
     val BD = FirebaseFirestore.getInstance("default")
     val userActual = auth.currentUser
-    var userDevuelto = usuario("","","", 0)
+    var userDevuelto = usuario("", "", "", 0)
 
     if (userActual != null) {
         val docRef = userActual.email?.let { BD.collection("usuarios").document(it) }
-        if (docRef != null) {
-            docRef.get().addOnSuccessListener { documentSnapshot ->
-                userDevuelto = documentSnapshot.toObject<usuario>()!!
-            }
-            userDevuelto.nombre?.let { Text(it) }
-            userDevuelto.email?.let { Text(it) }
-            userDevuelto.telefono?.let { Text(it) }
-            Text(userDevuelto.lavados.toString())
+        docRef?.get()?.addOnSuccessListener { documentSnapshot ->
+            userDevuelto = documentSnapshot.toObject<usuario>()!!
         }
     }
-
-
+    /*-----LA APP CRASHEA----------
+    val postListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            val userDevueltoeventlistener = dataSnapshot.getValue<usuario>()
+            if (userDevueltoeventlistener != null) {
+                print("Email: ${userDevueltoeventlistener.email}")
+                print(userDevueltoeventlistener.nombre)
+                print(userDevueltoeventlistener.telefono)
+            }
+        }
+        override fun onCancelled(databaseError: DatabaseError) {
+            Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
+        }
+    }
+    Firebase.database.reference.addValueEventListener(postListener)
+    */
     /*if (userActual != null) {
         var email = userActual.email
         var nombre = ""
@@ -296,26 +312,6 @@ fun datosCliente2() {
         }
     }
     return userDevuelto*/
-}
-
-@Composable
-fun datosClienteMia() {
-    val auth = FirebaseAuth.getInstance()
-    val BD = FirebaseFirestore.getInstance("default")
-    val userActual = auth.currentUser
-
-
-    if (userActual != null) {
-        var email = userActual.email
-        var nombre = ""
-        var telefono = ""
-        email?.let {
-            BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it ->
-                nombre = it.get("nombre").toString()
-                telefono = it.get("telefono").toString()
-            }
-        }
-    }
 }
 
 @Composable
@@ -435,7 +431,8 @@ fun botonConfirmarCita() {
         onClick = {/* */ },
         modifier = Modifier
             .height(40.dp)
-            .width(250.dp),
+            .width(250.dp)
+            .padding(10.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent, contentColor = Color.Blue
         ),
@@ -508,7 +505,6 @@ fun selectorHora(horaSeleccionada: String?, eleccion: (String) -> Unit) {
                 text = horaSeleccionada ?: "Hora"
             )
         }
-
         DropdownMenu(
             expanded = expandido,
             onDismissRequest = { expandido = false }
@@ -586,11 +582,25 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
     }*/
 }
 
+//----------------------------------------------------------------
+/*
+@Composable
+fun datosClienteMia() {
+    val auth = FirebaseAuth.getInstance()
+    val BD = FirebaseFirestore.getInstance("default")
+    val userActual = auth.currentUser
 
 
-
-
-
-
-
-
+    if (userActual != null) {
+        var email = userActual.email
+        var nombre = ""
+        var telefono = ""
+        email?.let {
+            BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it ->
+                nombre = it.get("nombre").toString()
+                telefono = it.get("telefono").toString()
+            }
+        }
+    }
+}
+*/

@@ -51,7 +51,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -155,6 +157,7 @@ fun pantallaRegistro(controller: NavController) {
 
 @Composable
 fun registrarUsuario(controller: NavController) {
+
     var BD = FirebaseFirestore.getInstance("default")
     var auth = FirebaseAuth.getInstance()
     val coroutineScope = rememberCoroutineScope()
@@ -255,7 +258,8 @@ fun registrarUsuario(controller: NavController) {
                         }
                     }
 
-                    BD.collection("usuarios").document(userNuevo.email).set(userNuevo)
+                    BD.collection("usuarios").add(userNuevo)
+                    //Firebase.database.reference.child("usuarios").child(userNuevo.email).setValue(userNuevo)
                 }
             }
         },

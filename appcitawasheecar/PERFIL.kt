@@ -264,18 +264,18 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
                 userActual = userActual.copy(telefono = it)
             }
         }
+        Text(
+            text = "Email",
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
         userActual.email?.let {
-            campoEditable(
-                label = "Email",
-                value = it,
-                editable,
-                keyboardType = KeyboardType.Email
-            ) {
-                userActual = userActual.copy(email = it)
-            }
+            Text(
+                it,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
         Text(
-            text = "Cantidad de Lavados: ${userActual.lavados}",
+            text = "Cantidad de Lavados:  ${userActual.lavados}",
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
@@ -307,7 +307,8 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
                 )
             }
             spacer(espacio = 16)
-            botonCerrarSesion(controller)
+            if (!editable)
+                botonCerrarSesion(controller)
         }
     }
 }
