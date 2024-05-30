@@ -129,22 +129,22 @@ fun pantallaInicioSesion(controller: NavController) {
                             modifier = Modifier.size(33.dp)
                         )
                     }
-                },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = Color(240, 255, 255),
-                        contentColor = Color(100, 149, 237),
-                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                    ) {
-                        Icon(
-                            Icons.Filled.Event,
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
+                containerColor = Color(240, 255, 255),
+                contentColor = Color(100, 149, 237),
+                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+            ) {
+                Icon(
+                    Icons.Filled.Event,
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     ) { innerPadding ->
         Column(

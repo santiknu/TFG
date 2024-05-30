@@ -1,6 +1,7 @@
 package com.example.appcitawasheecar
 
 import android.app.AlertDialog
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.Firebase
+import com.google.firebase.appcheck.internal.util.Logger.TAG
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
@@ -123,22 +125,22 @@ fun pantallaRegistro(controller: NavController) {
                             modifier = Modifier.size(33.dp)
                         )
                     }
-                },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = Color(240, 255, 255),
-                        contentColor = Color(100, 149, 237),
-                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                    ) {
-                        Icon(
-                            Icons.Filled.Event,
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
+                containerColor = Color(240, 255, 255),
+                contentColor = Color(100, 149, 237),
+                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+            ) {
+                Icon(
+                    Icons.Filled.Event,
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -158,7 +160,8 @@ fun pantallaRegistro(controller: NavController) {
 @Composable
 fun registrarUsuario(controller: NavController) {
 
-    var BD = FirebaseFirestore.getInstance("default")
+    var BD = FirebaseFirestore.getInstance()
+    val coleccionUsusarios = BD.collection("usuarios")
     var auth = FirebaseAuth.getInstance()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -232,7 +235,8 @@ fun registrarUsuario(controller: NavController) {
     Button(
         onClick = {
             coroutineScope.launch {
-                val userNuevo = usuario(nombre, telefono, email, lavados = 0)
+
+                val userNuevo = usuario (email, lavados = 0, nombre, telefono)
 
                 if (userNuevo.email != null) {
                     auth.createUserWithEmailAndPassword(userNuevo.email, password).addOnCompleteListener {
@@ -242,6 +246,24 @@ fun registrarUsuario(controller: NavController) {
                                 "Bienvenido",
                                 Toast.LENGTH_LONG
                             ).show()
+                            val userNuevoLOG = hashMapOf(
+                                "email" to userNuevo.email,
+                                "lavados" to userNuevo.lavados,
+                                "nombre" to userNuevo.nombre,
+                                "telefono" to userNuevo.telefono
+                            )
+
+                            BD.collection("usuarios").document(email)
+                                .set(userNuevoLOG)
+                                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
+                                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+                            /*val datosUser = hashMapOf(
+                                "email" to userNuevo.email,
+                                "lavados" to userNuevo.lavados,
+                                "nombre" to userNuevo.nombre,
+                                "telefono" to userNuevo.telefono
+                            )
+                            coleccionUsusarios.document(userNuevo.email.toString()).set(datosUser)*/
                             controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
                         } else {
                             val builder = AlertDialog.Builder(context)
@@ -258,7 +280,7 @@ fun registrarUsuario(controller: NavController) {
                         }
                     }
 
-                    BD.collection("usuarios").add(userNuevo)
+                    //coleccionUsusarios.document(userNuevo.email).set(userNuevo)
                     //Firebase.database.reference.child("usuarios").child(userNuevo.email).setValue(userNuevo)
                 }
             }

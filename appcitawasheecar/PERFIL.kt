@@ -1,16 +1,13 @@
 package com.example.appcitawasheecar
 
-import androidx.compose.foundation.background
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +26,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,33 +33,30 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.appcheck.internal.util.Logger.TAG
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 //-----------------------------CLASES-----------------------------------
 
 data class usuario(
-    val nombre: String?,
-    val telefono: String?,
-    val email: String?,
-    val lavados: Int?,
-    //val vehiculo: String?
+    val email: String? = null,
+    val lavados: Int? = 0,
+    val nombre: String? = null,
+    val telefono: String? = null,
 )
 
 data class vehiculo(
@@ -83,17 +76,6 @@ fun pantallaPerfil(controller: NavController) {
     if (auth.currentUser != null) {
         ruta = AppScreens.PERFIL_SCREEN.ruta
     }
-
-    /*val currentUser = auth.currentUser
-    val userId = currentUser?.uid ?: ""
-    var user by remember { mutableStateOf<usuario?>(null) }
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(userId) {
-        if (userId.isNotEmpty()) {
-            val userData = getUserData(userId)
-            user = userData
-        }
-    }*/
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -151,22 +133,22 @@ fun pantallaPerfil(controller: NavController) {
                             modifier = Modifier.size(33.dp)
                         )
                     }
-                },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = Color(240, 255, 255),
-                        contentColor = Color(100, 149, 237),
-                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                    ) {
-                        Icon(
-                            Icons.Filled.Event,
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
+                containerColor = Color(240, 255, 255),
+                contentColor = Color(100, 149, 237),
+                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+            ) {
+                Icon(
+                    Icons.Filled.Event,
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -177,16 +159,6 @@ fun pantallaPerfil(controller: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            /* prueba para ver si devuelve datos del usuario
-            if (user != null) {
-                Text(text = "Nombre: ${user!!.nombre}", style = MaterialTheme.typography.bodySmall)
-                Text(text = "Email: ${user!!.email}", style = MaterialTheme.typography.bodySmall)
-                Text(text = "Teléfono: ${user!!.telefono}", style = MaterialTheme.typography.bodySmall)
-                Text(text = "Lavados: ${user!!.lavados}", style = MaterialTheme.typography.bodySmall)
-            } else {
-                Text(text = "Cargando...", style = MaterialTheme.typography.labelMedium)
-            }
-            */
             recuperarDatosUsusarioActual(controller)
         }
     }
@@ -200,7 +172,7 @@ fun botonCerrarSesion(controller: NavController) {
         onClick = { auth.signOut(); controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
-            contentColor = Color.Blue
+            contentColor = Color(100, 149, 237)
         )
     ) {
         Text(text = "Cerrar Sesión")
@@ -210,100 +182,95 @@ fun botonCerrarSesion(controller: NavController) {
 @Composable
 fun recuperarDatosUsusarioActual(controller: NavController) {
 
-    var BD = FirebaseFirestore.getInstance("default")
-    var editable by remember { mutableStateOf(false) }
+    var BD = FirebaseFirestore.getInstance()
+    var coleccionUsuarios = BD.collection("usuarios")
 
+    var editable by remember { mutableStateOf(false) }
     var email = FirebaseAuth.getInstance().currentUser?.email
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
-    var lavados = 0
-    var vehiculos: List<vehiculo>? = null
-    /*
-    var matricula = ""
-    var marca: String
-    var modelo: String
-    var vehiculo: vehiculo? = null
-    */
-    if (email != null) {
-        nombre = "Manolo"
-        telefono = "1234"
-        BD.collection("usuarios").document(email).get().addOnSuccessListener {
-            nombre = "Juan y medio"
-            nombre = it.get("nombre").toString()
-            telefono = it.get("telefono").toString()
-            lavados = it.get("lavados").toString().toInt()
-            /*matricula = it.get("vehiculo").toString()
-            BD.collection("vehiculos").document(matricula).get().addOnSuccessListener { itV ->
-                marca = itV.get("marca").toString()
-                modelo = itV.get("modelo").toString()
-                vehiculo = vehiculo(marca, modelo, matricula)
-            }*/
+    var lavados by remember { mutableIntStateOf(0) }
+
+    var userActual by remember { mutableStateOf(usuario()) }
+
+    LaunchedEffect(email) {
+        email?.let {
+            coleccionUsuarios.document(it).get().addOnSuccessListener { document ->
+                if (document != null) {
+                    nombre = document.getString("nombre").orEmpty()
+                    telefono = document.getString("telefono").orEmpty()
+                    lavados = document.getLong("lavados")?.toInt() ?: 0
+                    userActual = usuario(it, lavados, nombre, telefono)
+                    Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+                } else {
+                    Log.d(TAG, "No such document")
+                }
+            }.addOnFailureListener { exception ->
+                Log.d(TAG, "get failed with ", exception)
+            }
         }
     }
 
-    //var userActual by remember { mutableStateOf(usuario(nombre, telefono, email, lavados, vehiculos))}
-    var userActual = usuario(nombre, telefono, email, lavados/*, matricula*/)
-
     Column(modifier = Modifier.padding(16.dp)) {
-        userActual.nombre?.let {
-            campoEditable(
-                label = "Nombre",
-                value = it,
-                editable
-            ) {
-                userActual = userActual.copy(nombre = it)
-            }
-        }
-        userActual.telefono?.let {
-            campoEditable(
-                label = "Teléfono",
-                value = it,
-                editable,
-                keyboardType = KeyboardType.Phone
-            ) {
-                userActual = userActual.copy(telefono = it)
-            }
-        }
+
         Text(
             text = "Email",
             modifier = Modifier.padding(vertical = 4.dp)
         )
-        userActual.email?.let {
-            Text(
-                it,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-        }
         Text(
-            text = "Cantidad de Lavados:  ${userActual.lavados}",
+            email.toString(),
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
+        Text(
+            text = "Cantidad de Lavados:  $lavados",
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
-        //vehiculo?.let { infoVehiculo(it) }
+        campoEditable(
+            label = "Nombre",
+            value = nombre,
+            editable,
+            keyboardType = KeyboardType.Text
+        ) {
+            nombre = it
+            userActual = userActual.copy(nombre = it)
+        }
 
-
+        campoEditable(
+            label = "Teléfono",
+            value = telefono,
+            editable,
+            keyboardType = KeyboardType.Phone
+        ) {
+            telefono = it
+            userActual = userActual.copy(telefono = it)
+        }
         Row {
             Button(
                 onClick = {
                     editable = !editable;
                     if (editable) {
-                        val datosUserNuevos = usuario(nombre, telefono, email, lavados = 0)
-                        datosUserNuevos.email?.let {
-                            BD.collection("usuarios").document(it).set(datosUserNuevos)
-                        }
+                        coleccionUsuarios.document(email.toString()).set(userActual)
+                            .addOnSuccessListener {
+                                Log.d("TAG", "DocumentSnapshot successfully written!")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("TAG", "Error writing document", e)
+                            }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
-                    contentColor = Color.Blue
+                    contentColor = Color(100, 149, 237)
                 )
             ) {
                 Text(
-                    if (editable)
+                    if (editable) {
                         "Guardar"
-                    else
+                    } else {
                         "Editar"
+                    }
                 )
             }
             spacer(espacio = 16)
@@ -318,11 +285,11 @@ fun campoEditable(
     label: String,
     value: String,
     editable: Boolean,
-    keyboardType: KeyboardType = KeyboardType.Text,
+    keyboardType: KeyboardType,
     onValueChange: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        Text(text = label)
         if (editable) {
             TextField(
                 value = value,
@@ -460,3 +427,45 @@ fun infoVehiculo(vehiculo: vehiculo) {
     }
 }
 */
+/*coleccionUsuarios.document(email).get().addOnSuccessListener{documentSnapshot ->
+
+    userActual = documentSnapshot.toObject<usuario>()!!
+
+    nombre = documentSnapshot.get("nombre").toString()
+    telefono = documentSnapshot.get("telefono").toString()
+    lavados = documentSnapshot.get("lavados").toString().toInt()
+    userActual = usuario(email, nombre, telefono, lavados)
+
+}*/
+/*coleccionUsuarios.document(email.toString()).get().addOnSuccessListener {
+    nombre = it.get("nombre").toString()
+    telefono = it.get("telefono").toString()
+    lavados = it.get("lavados").toString().toInt()
+    userActual = usuario(email, nombre, telefono, lavados)
+
+}*/
+/*
+var matricula = ""
+var marca: String
+var modelo: String
+var vehiculo: vehiculo? = null
+if (email != null) {
+    nombre = "Manolo"
+    telefono = "1234"
+    BD.collection("usuarios").document(email).get().addOnSuccessListener {
+        nombre = "Juan y medio"
+        nombre = it.get("nombre").toString()
+        telefono = it.get("telefono").toString()
+        lavados = it.get("lavados").toString().toInt()
+        matricula = it.get("vehiculo").toString()
+        BD.collection("vehiculos").document(matricula).get().addOnSuccessListener { itV ->
+            marca = itV.get("marca").toString()
+            modelo = itV.get("modelo").toString()
+            vehiculo = vehiculo(marca, modelo, matricula)
+        }
+    }
+}
+*/
+
+//var userActual by remember { mutableStateOf(usuario(nombre, telefono, email, lavados, vehiculos))}
+//var userActual = usuario(nombre, telefono, email, lavados)

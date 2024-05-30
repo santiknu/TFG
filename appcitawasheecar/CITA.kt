@@ -1,6 +1,5 @@
 package com.example.appcitawasheecar
 
-import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalCarWash
 import androidx.compose.material3.BottomAppBar
@@ -26,14 +24,14 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,20 +45,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
+import com.google.firebase.appcheck.internal.util.Logger.TAG
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
-import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
-import com.google.firebase.firestore.toObjects
-import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+
+data class cita(
+    var fecha: String,
+    var hora: String,
+    var servicio: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +69,7 @@ fun pantallaCita(controller: NavController) {
     var fechaSeleccionada by remember { mutableStateOf<Date?>(null) }
     var horaSeleccionada by remember { mutableStateOf<String?>(null) }
     var servicioSeleccionado by remember { mutableStateOf<String?>(null) }
-    var pulsadoAñadirServicio by remember { mutableStateOf(false) }
+    val dateFormatter = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
 
     val auth = FirebaseAuth.getInstance()
     var ruta = AppScreens.LOGIN_SCREEN.ruta
@@ -90,7 +88,7 @@ fun pantallaCita(controller: NavController) {
                 ),
                 title = {
                     androidx.compose.material3.Text(
-                        "Menu Principal",
+                        "Pedir Cita",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -133,20 +131,6 @@ fun pantallaCita(controller: NavController) {
                         )
                     }
                 },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = Color(240, 255, 255),
-                        contentColor = Color(100, 149, 237),
-                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                    ) {
-                        androidx.compose.material3.Icon(
-                            Icons.Filled.Event,
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-                }
             )
         }
     ) { innerPadding ->
@@ -193,25 +177,28 @@ fun pantallaCita(controller: NavController) {
                     servicioSeleccionado = servicioSeleccionado,
                     eleccion = { servicio -> servicioSeleccionado = servicio })
             }
+
+            val fechaSeleccionadaCita: String = fechaSeleccionada?.let {dateFormatter.format(it).toString()}.toString()
+            val horaSeleccionadaCita: String = horaSeleccionada.toString()
+            val servicioSeleccionadoCita: String = servicioSeleccionado.toString()
+
+            var cita = cita(fechaSeleccionadaCita, horaSeleccionadaCita, servicioSeleccionadoCita)
+
             spacer(espacio = 8)
-            Column {
-                //datosCliente()
-                datosCliente2()
-            }
+            var cliente = datosCliente()
+            //datosCliente2()
             spacer(espacio = 8)
-            Column() {
-                datosCoche()
-            }
+            var coche = datosCoche()
             spacer(espacio = 8)
             Row {
-                botonConfirmarCita()
+                botonConfirmarCita(cliente, coche, cita, controller)
             }
         }
     }
 }
 
 @Composable
-fun datosCoche() {
+fun datosCoche(): vehiculo {
     var matricula by remember { mutableStateOf("") }
     var marca by remember { mutableStateOf("") }
     var modelo by remember { mutableStateOf("") }
@@ -244,111 +231,47 @@ fun datosCoche() {
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
+            .padding(start = 10.dp/*, end = 10.dp*/),
         value = modelo,
         onValueChange = { modelo = it },
         label = { Text("Modelo") }
     )
-}
-/*
-@Composable
-fun datosCliente1() {
-    val auth = FirebaseAuth.getInstance()
-    val BD = FirebaseFirestore.getInstance("default")
-    val userActual = auth.currentUser
-    var userDevuelto = usuario("", "", "", 0)
-
-
-    if (userActual != null) {
-        var email = userActual.email
-        var nombre = ""
-        var telefono = ""
-
-        val usuarioscollection = BD.collection("usuarios")
-        val query = email?.let { usuarioscollection.whereEqualTo("email", it) }
-        query?.get()?.addOnSuccessListener { documentSnapshot ->
-            userDevuelto = documentSnapshot.toObjects<usuario>(usuario.class)
-        }
-    }
-}
-*/
-@Composable
-fun datosCliente2() {
-    val auth = FirebaseAuth.getInstance()
-    val BD = FirebaseFirestore.getInstance("default")
-    val userActual = auth.currentUser
-    var userDevuelto = usuario("", "", "", 0)
-
-    if (userActual != null) {
-        val docRef = userActual.email?.let { BD.collection("usuarios").document(it) }
-        docRef?.get()?.addOnSuccessListener { documentSnapshot ->
-            userDevuelto = documentSnapshot.toObject<usuario>()!!
-        }
-    }
-    /*-----LA APP CRASHEA----------
-    val postListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            val userDevueltoeventlistener = dataSnapshot.getValue<usuario>()
-            if (userDevueltoeventlistener != null) {
-                print("Email: ${userDevueltoeventlistener.email}")
-                print(userDevueltoeventlistener.nombre)
-                print(userDevueltoeventlistener.telefono)
-            }
-        }
-        override fun onCancelled(databaseError: DatabaseError) {
-            Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
-        }
-    }
-    Firebase.database.reference.addValueEventListener(postListener)
-    */
-    /*if (userActual != null) {
-        var email = userActual.email
-        var nombre = ""
-        var telefono = ""
-
-        val datosUserActual = email?.let { BD.collection("usuarios").document(it) }
-        datosUserActual?.get()?.addOnSuccessListener { documentSnapshot ->
-            userDevuelto = documentSnapshot.toObject<usuario>()!!//que no es nulo
-        }
-    }
-    return userDevuelto*/
+    return vehiculo(matricula = matricula, marca = marca, modelo = modelo)
 }
 
 @Composable
-fun datosCliente() {
+fun datosCliente(): usuario {
 
     val auth = FirebaseAuth.getInstance()
-    val BD = FirebaseFirestore.getInstance("default")
-    val userActual = auth.currentUser
+    val BD = FirebaseFirestore.getInstance()
+    val coleccionUsuarios = BD.collection("usuarios")
+    val currentUserAuth = auth.currentUser
 
+    var email = currentUserAuth?.email
+    var lavados by remember { mutableIntStateOf(0) }
+    var nombre by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
 
-    if (userActual != null) {
-        var email = userActual.email
-        var nombre = ""
-        var telefono = ""
-        /*email?.let {
-            BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it->
-                nombre = it.get("nombre").toString()
-                telefono = it.get("telefono").toString()
-            }
-        }*/
+    var userActual by remember { mutableStateOf(usuario()) }
 
-        val usuarioscollection = BD.collection("usuarios")
-        val query = email?.let { usuarioscollection.whereEqualTo(it, true) }
-        query?.get()?.addOnSuccessListener { documents ->
-            for (document in documents) {
-                Log.d(TAG, "${document.id} => ${document.data}")
-            }
-        }
-
-        val datosUserActual = email?.let { BD.collection("usuarios").document(it) }
-        datosUserActual?.get()?.addOnSuccessListener { document ->
-            if (document != null) {
-                Log.d(TAG, "DocumentSnapshot data: ${document.data}")
-            } else {
-                Log.d(TAG, "No such document")
+    LaunchedEffect(email) {
+        email?.let {
+            coleccionUsuarios.document(it).get().addOnSuccessListener { document ->
+                if (document != null) {
+                    nombre = document.getString("nombre").orEmpty()
+                    telefono = document.getString("telefono").orEmpty()
+                    lavados = document.getLong("lavados")?.toInt() ?: 0
+                    userActual = usuario(it, lavados, nombre, telefono)
+                    Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+                } else {
+                    Log.d(TAG, "No such document")
+                }
+            }.addOnFailureListener { exception ->
+                Log.d(TAG, "get failed with ", exception)
             }
         }
+    }
+    if(currentUserAuth != null){
 
         Text(
             "Información del cliente", modifier = Modifier
@@ -356,38 +279,39 @@ fun datosCliente() {
                 .padding(start = 10.dp, end = 10.dp)
         )
         spacer(espacio = 5)
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre") }
-        )
-        spacer(espacio = 3)
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            value = telefono,
-            onValueChange = { telefono = it },
-            label = { Text("Teléfono") }
-        )
-        spacer(espacio = 3)
-        if (email != null) {
+        userActual.nombre?.let {
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 10.dp, end = 10.dp),
-                value = email,
+                value = it,
+                onValueChange = { nombre = it },
+                label = { Text("Nombre") }
+            )
+        }
+        spacer(espacio = 3)
+        userActual.telefono?.let {
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                value = it,
+                onValueChange = { telefono = it },
+                label = { Text("Teléfono") }
+            )
+        }
+        spacer(espacio = 3)
+        email?.let {
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                value = it,
                 onValueChange = { email = it },
                 label = { Text("Email") }
             )
         }
     } else {
-        var nombre by remember { mutableStateOf("") }
-        var telefono by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
 
         Text(
             "Información del cliente", modifier = Modifier
@@ -417,29 +341,49 @@ fun datosCliente() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 10.dp, end = 10.dp),
-            value = email,
+            value = email.toString(),
             onValueChange = { email = it },
             label = { Text("Email") }
         )
     }
+    return userActual
 }
 
 @Composable
-fun botonConfirmarCita() {
+fun botonConfirmarCita(user: usuario, coche: vehiculo, cita: cita, controller: NavController) {
 
     Button(
-        onClick = {/* */ },
+        onClick = { crearCita(user, coche, cita); controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
         modifier = Modifier
-            .height(40.dp)
+            .height(60.dp)
             .width(250.dp)
             .padding(10.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent, contentColor = Color.Blue
+            containerColor = Color(100, 149, 237), contentColor = Color(240, 255, 255)
         ),
         shape = RectangleShape
     ) {
-        androidx.compose.material3.Text(text = "CONFIRMAR")
+        Text(text = "CONFIRMAR")
     }
+}
+
+fun crearCita(user: usuario, coche: vehiculo, cita: cita) {
+
+    val BD = FirebaseFirestore.getInstance()
+    val coleccionCitas = BD.collection("citas")
+
+    val datoscita = hashMapOf(
+        "email" to user.email,
+        "fecha" to cita.fecha,
+        "hora" to cita.hora,
+        "marca" to coche.marca,
+        "matricula" to coche.matricula,
+        "modelo" to coche.modelo,
+        "nombre" to user.nombre,
+        "servicio" to cita.servicio,
+        "telefono" to user.telefono,
+    )
+    user.email?.let { coleccionCitas.document(it).set(datoscita) }
 }
 
 @Composable
@@ -585,22 +529,91 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
 //----------------------------------------------------------------
 /*
 @Composable
-fun datosClienteMia() {
+fun datosCliente2() {
     val auth = FirebaseAuth.getInstance()
     val BD = FirebaseFirestore.getInstance("default")
     val userActual = auth.currentUser
+    var userDevuelto = usuario("", "", "", 0)
 
-
+    //-----LA APP CRASHEA----------
+    if (userActual != null) {
+        val docRef = userActual.email?.let { BD.collection("usuarios").document(it) }
+        docRef?.get()?.addOnSuccessListener { documentSnapshot ->
+            userDevuelto = documentSnapshot.toObject<usuario>()!!
+        }
+    }
+    /*-----LA APP CRASHEA----------
+    val postListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            val userDevueltoeventlistener = dataSnapshot.getValue<usuario>()
+            if (userDevueltoeventlistener != null) {
+                print("Email: ${userDevueltoeventlistener.email}")
+                print(userDevueltoeventlistener.nombre)
+                print(userDevueltoeventlistener.telefono)
+            }
+        }
+        override fun onCancelled(databaseError: DatabaseError) {
+            Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
+        }
+    }
+    Firebase.database.reference.addValueEventListener(postListener)
+    */
+    //-----LA APP CRASHEA----------
+    /*
     if (userActual != null) {
         var email = userActual.email
         var nombre = ""
         var telefono = ""
-        email?.let {
-            BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it ->
-                nombre = it.get("nombre").toString()
-                telefono = it.get("telefono").toString()
-            }
+
+        val datosUserActual = email?.let { BD.collection("usuarios").document(it) }
+        datosUserActual?.get()?.addOnSuccessListener { documentSnapshot ->
+            userDevuelto = documentSnapshot.toObject<usuario>()!!//que no es nulo
         }
     }
+    return userDevuelto
+}
+*/
+
+/*
+@Composable
+fun datosClienteMia() {
+val auth = FirebaseAuth.getInstance()
+val BD = FirebaseFirestore.getInstance("default")
+val userActual = auth.currentUser
+
+
+if (userActual != null) {
+    var email = userActual.email
+    var nombre = ""
+    var telefono = ""
+    email?.let {
+        BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it ->
+            nombre = it.get("nombre").toString()
+            telefono = it.get("telefono").toString()
+        }
+    }
+}
+}
+*/
+/*
+@Composable
+fun datosCliente1() {
+val auth = FirebaseAuth.getInstance()
+val BD = FirebaseFirestore.getInstance("default")
+val userActual = auth.currentUser
+var userDevuelto = usuario("", "", "", 0)
+
+
+if (userActual != null) {
+    var email = userActual.email
+    var nombre = ""
+    var telefono = ""
+
+    val usuarioscollection = BD.collection("usuarios")
+    val query = email?.let { usuarioscollection.whereEqualTo("email", it) }
+    query?.get()?.addOnSuccessListener { documentSnapshot ->
+        userDevuelto = documentSnapshot.toObjects<usuario>(usuario.class)
+    }
+}
 }
 */
