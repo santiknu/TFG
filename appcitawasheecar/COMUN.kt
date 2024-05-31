@@ -1,8 +1,14 @@
 package com.example.appcitawasheecar
 
+import android.app.AlertDialog
+import android.content.Context
 import android.provider.CalendarContract.Instances
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -29,11 +37,18 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -41,6 +56,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.OnPlacedModifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.Firebase
@@ -62,7 +89,9 @@ fun logoPNG(){
         painter = painterResource(id = R.drawable.logo_png),
         contentDescription = "logo png",
         contentScale = ContentScale.Crop,
-        modifier = Modifier.size(320.dp).padding(10.dp)
+        modifier = Modifier
+            .size(320.dp)
+            .padding(10.dp)
     )
 }
 
@@ -76,163 +105,161 @@ fun divider(horizontal : Int, vertical : Int) {
     HorizontalDivider(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = horizontal.dp, vertical = vertical.dp ),
+            .padding(horizontal = horizontal.dp, vertical = vertical.dp),
         color = Color(100, 149, 237)
     )
 }
 
-//-----------------ESTRUCTURA BASE DE APP------------------------
-/*
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun estructuraBase(controller: NavController) {
-
-    val auth = FirebaseAuth.getInstance()
-    var ruta = AppScreens.LOGIN_SCREEN.ruta
-    var ruta2 = AppScreens.REGISTER_SCREEN.ruta
-    if (auth.currentUser != null){
-        ruta = AppScreens.PERFIL_SCREEN.ruta
-        ruta2 = AppScreens.PERFIL_SCREEN.ruta
-    }
-
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
-    Scaffold(
-        backgroundColor = Color(135, 206, 235),
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(100,149,237),
-                    titleContentColor = Color(240,255,255),
-                    actionIconContentColor = Color(240,255,255)
-                ),
-                title = {
-                    androidx.compose.material3.Text(
-                        "Menu Principal",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                    )
-                },
-                actions = {
-                    androidx.compose.material3.IconButton(onClick = { controller.navigate(route = ruta) }) {
-                        androidx.compose.material3.Icon(
-                            imageVector = Icons.Filled.AccountCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(33.dp)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = Color(100,149,237),
-                contentColor = Color(240,255,255),
-                actions = {
-                    androidx.compose.material3.IconButton(
-                        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
-                        modifier = Modifier.weight(0.5f)
-                    ) {
-                        androidx.compose.material3.Icon(
-                            Icons.Filled.Home,
-                            contentDescription = null,
-                            modifier = Modifier.size(33.dp)
-                        )
-                    }
-                    androidx.compose.material3.IconButton(
-                        onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) },
-                        modifier = Modifier.weight(0.5f)
-                    ) {
-                        androidx.compose.material3.Icon(
-                            Icons.Filled.LocalCarWash,
-                            contentDescription = null,
-                            modifier = Modifier.size(33.dp)
-                        )
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                containerColor = Color(240,255,255),
-                contentColor = Color(100,149,237),
-                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-            ) {
-                androidx.compose.material3.Icon(
-                    Icons.Filled.Event,
-                    contentDescription = null,
-                    modifier = Modifier.size(30.dp)
-                )
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-        }
-    }
+fun caja(content : @Composable BoxScope.() -> Unit){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(240, 255, 255))
+            .padding(20.dp),
+        content = content
+    )
 }
-*/
-//------------------------BASES RECHAZADAS--------------------
-/*@Composable
-fun BASE PANTALLA(){
-    var bt_cita by remember { mutableStateOf(false) }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                backgroundColor = Color.Blue,
-                title = {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        text = "TITULO DE PAGINA"
-                    )
-                }
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                backgroundColor = Color.Blue
-            ) {
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { bt_cita = true }) {
-                Text(text = "Cita")
-            }
-        }
-    ) { innerPadding ->
-        CONTENIDO DE PANTALLA
-    }
-}*/
-/*@Composable
-fun cabecera(title: String) {
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.h6,
-                    color = Color.White,
+
+@Composable
+fun tituloNormal(text: String, modifier: Modifier) {
+    Text(
+        text = text,
+        color = Color(100, 149, 237),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun tituloSubrayado(text: String, modifier: Modifier){
+    Text(
+        modifier = modifier,
+        text = buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    textDecoration = TextDecoration.Underline,
+                    color = Color(100, 149, 237),
+                    fontSize = 16.sp,
+                    fontStyle = FontStyle.Italic,
                     fontWeight = FontWeight.Bold
                 )
+            ) {
+                append(text)
             }
         },
-        backgroundColor = Color.Blue,
-        modifier = Modifier
-            .height(50.dp)
+        style = MaterialTheme.typography.bodyLarge,
     )
-}*/
+}
+
+@Composable
+fun textoNormal(value: String,modifier: Modifier){
+    Text(
+        text = value,
+        modifier = modifier,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.SemiBold
+    )
+}
+
+@Composable
+fun campoTextoConLabel(value : String, label : String, onValueChange: (String) -> Unit, modifier: Modifier, keyboardType: KeyboardType){
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            focusedContainerColor = Color(100, 149, 237),
+            unfocusedContainerColor = Color(100, 149, 237),
+            cursorColor = Color.Black
+        ),
+        label = { Text(label)}
+    )
+}
+
+@Composable
+fun campoTextoSinLabel(value : String, onValueChange: (String) -> Unit, modifier: Modifier, keyboardType: KeyboardType){
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            focusedContainerColor = Color(100, 149, 237),
+            unfocusedContainerColor = Color(100, 149, 237),
+            cursorColor = Color.Black
+        )
+    )
+}
+
+@Composable
+fun campoTextoPssw(value: String,onValueChange: (String) -> Unit, visible : Boolean, colorTxt : Color, modifier: Modifier, placeholder: String?){
+
+    var passwordVisible by remember { mutableStateOf(visible) }
+
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Done
+        ),
+        placeholder = {
+            Text(
+                text = placeholder.toString(),
+                color = Color(240, 255, 255),
+                fontSize = 16.sp
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = {
+                passwordVisible = !passwordVisible
+            }) {
+                androidx.compose.material3.Icon(
+                    painter = painterResource(
+                        if (passwordVisible) {
+                            R.drawable.ojovisible
+                        } else {
+                            R.drawable.ojoinvisible
+                        }
+                    ),
+                    contentDescription = null,
+                    tint = Color(240, 255, 255),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        },
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = colorTxt,
+            focusedContainerColor = Color(100, 149, 237),
+            unfocusedContainerColor = Color(100, 149, 237),
+            cursorColor = colorTxt
+        )
+    )
+}
+
+fun mensajeFlotante(text: String, context : Context){
+    Toast.makeText(
+        context,
+        text,
+        Toast.LENGTH_LONG
+    ).show()
+}
+
+fun msgDialog(title : String, text: String, context : Context){
+    val builder = AlertDialog.Builder(context)
+    builder.setTitle("Error")
+    builder.setMessage("Se ha produciodo un error")
+    builder.setPositiveButton("Reintentar", null)
+    val dialog: AlertDialog = builder.create()
+    dialog.show()
+}

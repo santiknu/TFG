@@ -284,7 +284,6 @@ fun carruselFotos() {
 
 @Composable
 fun cajaBottom() {
-    //Mapa()
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -385,25 +384,3 @@ fun bannerPromociones() {
         )
     }
 }
-/*
-@Composable
-private fun MapViewContainer() {
-    MapView(
-        modifier = Modifier.fillMaxSize(),
-        onMapReady = { googleMap ->
-            googleMap.setOnMapClickListener {}
-        }
-    )
-}
-
-@Composable
-fun MapView(
-    modifier: Modifier = Modifier,
-    onMapReady: (GoogleMap) -> Unit
-) {
-    AndroidView({ context ->
-        MapView(context).apply {
-            getMapAsync { onMapReady.invoke(it) }
-        }
-    }, modifier = modifier)
-}*/

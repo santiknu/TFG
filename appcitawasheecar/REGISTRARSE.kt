@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalCarWash
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -165,226 +169,136 @@ fun registrarUsuario(controller: NavController) {
     var auth = FirebaseAuth.getInstance()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    var passwordVisible by remember { mutableStateOf(false) }
 
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Text(text = "Nombre", style = MaterialTheme.typography.bodyMedium)
-    TextField(
-        value = nombre,
-        onValueChange = { nombre = it },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text)
-    )
-    spacer(espacio = 10)
-    Text(text = "Email", style = MaterialTheme.typography.bodyMedium)
-    TextField(
-        value = email,
-        onValueChange = { email = it },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email)
-    )
-    spacer(espacio = 10)
-    Text(text = "Telefono", style = MaterialTheme.typography.bodyMedium)
-    TextField(
-        value = telefono,
-        onValueChange = { telefono = it },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone)
-    )
-    spacer(espacio = 10)
-    Text(text = "Contraseña", style = MaterialTheme.typography.bodyMedium)
-    TextField(
-        value = password,
-        onValueChange = { password = it },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Done
-        ),
-        trailingIcon = {
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    painter = painterResource(
-                        if (passwordVisible) {
-                            R.drawable.ojovisible
-                        } else {
-                            R.drawable.ojoinvisible
-                        }
-                    ),
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
-    )
-    spacer(espacio = 20)
-    Button(
-        onClick = {
-            coroutineScope.launch {
+    caja {
+        Column {
+            tituloNormal(
+                text = "NOMBRE",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            campoTextoSinLabel(
+                value = nombre,
+                onValueChange = { nombre = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardType = KeyboardType.Text
+            )
+            spacer(espacio = 10)
 
-                val userNuevo = usuario(email, lavados = 0, nombre, telefono)
+            tituloNormal(
+                text = "EMAIL",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            campoTextoSinLabel(
+                value = email,
+                onValueChange = { email = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardType = KeyboardType.Email
+            )
+            spacer(espacio = 10)
 
-                if (userNuevo.email != null) {
-                    auth.createUserWithEmailAndPassword(userNuevo.email, password)
-                        .addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                Toast.makeText(
-                                    context,
-                                    "Bienvenido",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                val userNuevoLOG = hashMapOf(
-                                    "email" to userNuevo.email,
-                                    "lavados" to userNuevo.lavados,
-                                    "nombre" to userNuevo.nombre,
-                                    "telefono" to userNuevo.telefono
-                                )
+            tituloNormal(
+                text = "TELEFONO",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            campoTextoSinLabel(
+                value = telefono,
+                onValueChange = { telefono = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardType = KeyboardType.Phone
+            )
+            spacer(espacio = 10)
 
-                                BD.collection("usuarios").document(email)
-                                    .set(userNuevoLOG)
-                                    .addOnSuccessListener {
-                                        Log.d(
-                                            TAG,
-                                            "DocumentSnapshot successfully written!"
+            tituloNormal(
+                text = "CONTRASEÑA",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            campoTextoPssw(
+                value = password,
+                onValueChange = { password = it },
+                false,
+                Color.Black,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                placeholder = ""
+            )
+            spacer(espacio = 20)
+
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        val userNuevo = usuario(email, lavados = 0, nombre, telefono)
+                        if (userNuevo.email != null) {
+                            auth.createUserWithEmailAndPassword(userNuevo.email, password)
+                                .addOnCompleteListener {
+                                    if (it.isSuccessful) {
+                                        mensajeFlotante("Cuenta creada ¡Bienvenido!", context)
+                                        val userNuevoLOG = hashMapOf(
+                                            "email" to userNuevo.email,
+                                            "lavados" to userNuevo.lavados,
+                                            "nombre" to userNuevo.nombre,
+                                            "telefono" to userNuevo.telefono
+                                        )
+                                        BD.collection("usuarios").document(email)
+                                            .set(userNuevoLOG)
+                                            .addOnSuccessListener {
+                                                Log.d(
+                                                    TAG,
+                                                    "DocumentSnapshot successfully written!"
+                                                )
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.w(
+                                                    TAG,
+                                                    "Error writing document",
+                                                    e
+                                                )
+                                            }
+                                        controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
+                                    } else {
+                                        msgDialog("Error", "Error al registrate", context)
+                                        mensajeFlotante(
+                                            "No ha sido posible crear el usuario",
+                                            context
                                         )
                                     }
-                                    .addOnFailureListener { e ->
-                                        Log.w(
-                                            TAG,
-                                            "Error writing document",
-                                            e
-                                        )
-                                    }
-                                controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
-                            } else {
-                                val builder = AlertDialog.Builder(context)
-                                builder.setTitle("Error")
-                                builder.setMessage("Se ha produciodo un error")
-                                builder.setPositiveButton("Reintentar", null)
-                                val dialog: AlertDialog = builder.create()
-                                dialog.show()
-                                Toast.makeText(
-                                    context,
-                                    "No ha sido posible crear el usuario",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                                }
                         }
-                }
+                    }
+                },
+                enabled = nombre.isNotEmpty() && telefono.isNotEmpty() && email.isNotEmpty(),
+                modifier = Modifier
+                    .height(60.dp)
+                    .width(250.dp)
+                    .padding(10.dp)
+                    .align(Alignment.CenterHorizontally),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF6495ED), contentColor = Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(4.dp),
+            ) {
+                Text("Registrarse")
             }
-        },
-        enabled = nombre.isNotEmpty() && telefono.isNotEmpty() && email.isNotEmpty(),
-        modifier = Modifier.padding(vertical = 16.dp)
-    ) {
-        Text("Registrarse")
-    }
-}
-
-//----------------------------------------------------------------
-/*
-suspend fun registerUser(nombre: String, telefono: String, email: String) {
-
-    val auth = FirebaseAuth.getInstance()
-    val db = FirebaseFirestore.getInstance()
-
-    val user = auth.currentUser
-    if (user != null) {
-        val userData = usuario(
-            nombre = nombre,
-            telefono = telefono,
-            email = email,
-            lavados = 0
-        )
-        db.collection("users").document(user.uid).set(userData).await()
-    }
-}
-*/
-/*
-@Composable
-fun RegisterScreen() {
-    var nombre by remember { mutableStateOf("") }
-    var telefono by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var vehiculo by remember { mutableStateOf(listOf(vehiculo("", "", ""))) }
-    val coroutineScope = rememberCoroutineScope()
-    val isDataComplete =
-        vehiculo.all { it.marca.isNotEmpty() && it.modelo.isNotEmpty() && it.matricula.isNotEmpty() }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Registro de Usuario",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-
-        EditableField(label = "Nombre", value = nombre, onValueChange = { nombre = it })
-        EditableField(
-            label = "Teléfono",
-            value = telefono,
-            onValueChange = { telefono = it },
-            keyboardType = KeyboardType.Phone
-        )
-        EditableField(
-            label = "Email",
-            value = email,
-            onValueChange = { email = it },
-            keyboardType = KeyboardType.Email
-        )
-
-        /*Text(text = "Vehículos", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 8.dp))
-        vehiculo.forEachIndexed { index, vehiculo ->
-            VehiculoField(vehiculo, onValueChange = { updatedVehiculo ->
-                vehiculo = vehiculo.toMutableList().also { it[index] = updatedVehiculo }
-            })
-        }*/
-
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    registerUser(nombre, telefono, email /*vehiculo*/)
-                }
-            },
-            enabled = nombre.isNotEmpty() && telefono.isNotEmpty() && vehiculo.isNotEmpty() && isDataComplete,
-            modifier = Modifier.padding(vertical = 16.dp)
-        ) {
-            Text("Guardar")
         }
     }
 }
-*/
-/*
-@Composable
-fun EditableField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    keyboardType: KeyboardType = KeyboardType.Text
-) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType)
-        )
-    }
-}
-*/

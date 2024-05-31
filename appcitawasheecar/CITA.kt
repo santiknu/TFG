@@ -1,6 +1,7 @@
 package com.example.appcitawasheecar
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -27,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -39,12 +43,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.FireBase.cita
 import com.example.appcitawasheecar.FireBase.crearCita
@@ -141,46 +149,26 @@ fun pantallaCita(controller: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            spacer(espacio = 8)
-            Column {
-                Text(
-                    text = "Selecciona un dia",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    color = Color(100, 149, 237)
-                )
-                selectorFecha(
-                    fechaSeleccionada = fechaSeleccionada,
-                    eleccion = { fecha -> fechaSeleccionada = fecha })
+            caja {
+                spacer(espacio = 8)
+                Column {
+                    val modifier = Modifier.align(Alignment.Start)
+                    tituloNormal("Selecciona una dia", modifier)
+                    selectorFecha(
+                        fechaSeleccionada = fechaSeleccionada,
+                        eleccion = { fecha -> fechaSeleccionada = fecha })
+                    spacer(espacio = 8)
+                    tituloNormal("Selecciona una hora", modifier)
+                    selectorHora(
+                        horaSeleccionada = horaSeleccionada,
+                        eleccion = { hora -> horaSeleccionada = hora })
+                    spacer(espacio = 8)
+                    tituloNormal(text = "Selecciona un servicio", modifier)
+                    selectorServicio(
+                        servicioSeleccionado = servicioSeleccionado,
+                        eleccion = { servicio -> servicioSeleccionado = servicio })
+                }
             }
-            spacer(espacio = 8)
-            Column {
-                Text(
-                    text = "Selecciona una hora",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    color = Color(100, 149, 237)
-                )
-                selectorHora(
-                    horaSeleccionada = horaSeleccionada,
-                    eleccion = { hora -> horaSeleccionada = hora })
-            }
-            spacer(espacio = 8)
-            Column {
-                Text(
-                    text = "Selecciona un servicio",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    color = Color(100, 149, 237)
-                )
-                selectorServicio(
-                    servicioSeleccionado = servicioSeleccionado,
-                    eleccion = { servicio -> servicioSeleccionado = servicio })
-            }
-
             val fechaSeleccionadaCita: String =
                 fechaSeleccionada?.let { dateFormatter.format(it).toString() }.toString()
             val horaSeleccionadaCita: String = horaSeleccionada.toString()
@@ -190,7 +178,6 @@ fun pantallaCita(controller: NavController) {
 
             spacer(espacio = 8)
             var cliente = datosCliente()
-            //datosCliente2()
             spacer(espacio = 8)
             var coche = datosCoche()
             spacer(espacio = 8)
@@ -213,45 +200,91 @@ fun pantallaCita(controller: NavController) {
 }
 
 @Composable
+fun botonConfirmarCita(
+    user: usuario,
+    coche: vehiculo,
+    cita: cita,
+    controller: NavController,
+    activado: Boolean
+) {
+
+    val context = LocalContext.current
+
+    Button(
+        onClick = {
+            crearCita(
+                user,
+                coche,
+                cita
+            )
+            controller.navigate(route = AppScreens.HOME_SCREEN.ruta);
+            var userNuevo = user.copy(lavados = user.lavados?.plus(1))
+            user.documentoUsuario(user.email.toString()).set(userNuevo).addOnSuccessListener {
+                mensajeFlotante("Cita añadida", context)
+            }
+                .addOnFailureListener {
+                    mensajeFlotante("Error al añadir cita",context)
+                }
+        },
+        modifier = Modifier
+            .height(60.dp)
+            .width(250.dp)
+            .padding(10.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF6495ED), contentColor = Color.White
+        ),
+        elevation = ButtonDefaults.buttonElevation(4.dp),
+        enabled = activado
+    ) {
+        Text(text = "CONFIRMAR")
+    }
+}
+
+@Composable
 fun datosCoche(): vehiculo {
     var matricula by remember { mutableStateOf("") }
     var marca by remember { mutableStateOf("") }
     var modelo by remember { mutableStateOf("") }
 
-    Text(
-        text = "Informacion del coche",
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        color = Color(100, 149, 237)
-    )
-    spacer(espacio = 5)
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        value = matricula,
-        onValueChange = { matricula = it },
-        label = { Text("Matrícula") }
-    )
-    spacer(espacio = 3)
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp),
-        value = marca,
-        onValueChange = { marca = it },
-        label = { Text("Marca") }
-    )
-    spacer(espacio = 3)
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp/*, end = 10.dp*/),
-        value = modelo,
-        onValueChange = { modelo = it },
-        label = { Text("Modelo") }
-    )
+    caja() {
+        Column {
+            val modifierTV = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp)
+            tituloNormal(text = "Informacion del vehiculo", modifierTV)
+            spacer(espacio = 5)
+            campoTextoConLabel(
+                value = matricula,
+                onValueChange = { matricula = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardType = KeyboardType.Text,
+                label = "Matricula"
+            )
+            spacer(espacio = 3)
+            campoTextoConLabel(
+                value = marca,
+                label = "Marca",
+                onValueChange = { marca = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardType = KeyboardType.Text
+            )
+            spacer(espacio = 3)
+            campoTextoConLabel(
+                value = modelo,
+                label = "Modelo",
+                onValueChange = { modelo = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp),
+                keyboardType = KeyboardType.Text
+            )
+        }
+    }
     return vehiculo(matricula = matricula, marca = marca, modelo = modelo)
 }
 
@@ -269,134 +302,117 @@ fun datosCliente(): usuario {
 
     var userActual by remember { mutableStateOf(usuario()) }
 
-    if (currentUserAuth != null) {
-
-        LaunchedEffect(email) {
-            emailAuth?.let {
-                userActual.documentoUsuario(it).get().addOnSuccessListener { document ->
-                    if (document != null) {
-                        email = document.getString("email").orEmpty()
-                        nombre = document.getString("nombre").orEmpty()
-                        telefono = document.getString("telefono").orEmpty()
-                        lavados = document.getLong("lavados")?.toInt() ?: 0
-                        userActual = usuario(email, lavados, nombre, telefono)
-                        Log.d(TAG, "DocumentSnapshot data: ${document.data}")
-                    } else {
-                        Log.d(TAG, "No such document")
+    caja() {
+        Column {
+            if (currentUserAuth != null) {
+                LaunchedEffect(email) {
+                    emailAuth?.let {
+                        userActual.documentoUsuario(it).get().addOnSuccessListener { document ->
+                            if (document != null) {
+                                email = document.getString("email").orEmpty()
+                                nombre = document.getString("nombre").orEmpty()
+                                telefono = document.getString("telefono").orEmpty()
+                                lavados = document.getLong("lavados")?.toInt() ?: 0
+                                userActual = usuario(email, lavados, nombre, telefono)
+                                Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+                            } else {
+                                Log.d(TAG, "No such document")
+                            }
+                        }.addOnFailureListener { exception ->
+                            Log.d(TAG, "get failed with ", exception)
+                        }
                     }
-                }.addOnFailureListener { exception ->
-                    Log.d(TAG, "get failed with ", exception)
                 }
+                tituloNormal(
+                    text = "Información del cliente",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                )
+                spacer(espacio = 5)
+                userActual.nombre?.let {
+                    campoTextoConLabel(
+                        value = it,
+                        label = "Nombre",
+                        onValueChange = { nombre = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp),
+                        keyboardType = KeyboardType.Text
+                    )
+                }
+                spacer(espacio = 3)
+                userActual.telefono?.let {
+                    campoTextoConLabel(
+                        value = it,
+                        label = "Teléfono",
+                        onValueChange = { telefono = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp),
+                        keyboardType = KeyboardType.Phone
+                    )
+                }
+                spacer(espacio = 3)
+                email.let {
+                    campoTextoConLabel(
+                        value = it,
+                        label = "Email",
+                        onValueChange = { email = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp),
+                        keyboardType = KeyboardType.Email
+                    )
+                }
+            } else {
+                tituloNormal(
+                    text = "Información del cliente",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, end = 10.dp)
+                )
+                spacer(espacio = 5)
+                userActual.nombre?.let {
+                    campoTextoConLabel(
+                        value = it,
+                        label = "Nombre",
+                        onValueChange = { nombre = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp),
+                        keyboardType = KeyboardType.Text
+                    )
+                }
+                spacer(espacio = 3)
+                userActual.telefono?.let {
+                    campoTextoConLabel(
+                        value = it,
+                        label = "Teléfono",
+                        onValueChange = { telefono = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp),
+                        keyboardType = KeyboardType.Phone
+                    )
+                }
+                spacer(espacio = 3)
+                email.let {
+                    campoTextoConLabel(
+                        value = it,
+                        label = "Email",
+                        onValueChange = { email = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, end = 10.dp),
+                        keyboardType = KeyboardType.Email
+                    )
+                }
+                userActual = usuario(email, lavados, nombre, telefono)
             }
         }
-        Text(
-            "Información del cliente", modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            color = Color(100, 149, 237)
-        )
-        spacer(espacio = 5)
-        userActual.nombre?.let {
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, end = 10.dp),
-                value = it,
-                onValueChange = { nombre = it },
-                label = { Text("Nombre") }
-            )
-        }
-        spacer(espacio = 3)
-        userActual.telefono?.let {
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, end = 10.dp),
-                value = it,
-                onValueChange = { telefono = it },
-                label = { Text("Teléfono") }
-            )
-        }
-        spacer(espacio = 3)
-        email.let {
-            TextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, end = 10.dp),
-                value = it,
-                onValueChange = { email = it },
-                label = { Text("Email") }
-            )
-        }
-    } else {
-        Text(
-            "Información del cliente", modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            color = Color(100, 149, 237)
-        )
-        spacer(espacio = 5)
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre") }
-        )
-        spacer(espacio = 3)
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            value = telefono,
-            onValueChange = { telefono = it },
-            label = { Text("Teléfono") }
-        )
-        spacer(espacio = 3)
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp),
-            value = email.toString(),
-            onValueChange = { email = it },
-            label = { Text("Email") }
-        )
-        userActual = usuario(email, lavados, nombre, telefono)
     }
     return userActual
-}
-
-@Composable
-fun botonConfirmarCita(
-    user: usuario,
-    coche: vehiculo,
-    cita: cita,
-    controller: NavController,
-    activado: Boolean
-) {
-
-    Button(
-        onClick = {
-            crearCita(
-                user,
-                coche,
-                cita
-            );
-            controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
-        },
-        modifier = Modifier
-            .height(60.dp)
-            .width(250.dp)
-            .padding(10.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(100, 149, 237), contentColor = Color(240, 255, 255)
-        ),
-        shape = RectangleShape,
-        enabled = activado
-    ) {
-        Text(text = "CONFIRMAR")
-    }
 }
 
 @Composable
@@ -413,13 +429,15 @@ fun selectorFecha(fechaSeleccionada: Date?, eleccion: (Date) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.Center)
+                .background(Color(100, 149, 237))
         ) {
             Text(
                 text = fechaSeleccionada?.let { dateFormatter.format(it) } ?: "Fecha",
-                color = Color(100, 149, 237)
+                color = Color(240, 255, 255)
             )
         }
         DropdownMenu(
+            modifier = Modifier.background(Color(100, 149, 237)),
             expanded = expandido,
             onDismissRequest = { expandido = false }
         ) {
@@ -458,13 +476,15 @@ fun selectorHora(horaSeleccionada: String?, eleccion: (String) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.Center)
+                .background(Color(100, 149, 237))
         ) {
             Text(
                 text = horaSeleccionada ?: "Hora",
-                color = Color(100, 149, 237)
+                color = Color(240, 255, 255)
             )
         }
         DropdownMenu(
+            modifier = Modifier.background(Color(100, 149, 237)),
             expanded = expandido,
             onDismissRequest = { expandido = false }
         ) {
@@ -493,19 +513,20 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.Center)
+                .background(Color(100, 149, 237))
         ) {
             Text(
                 text = servicioSeleccionado ?: "Servicio",
-                color = Color(100, 149, 237)
+                color = Color(240, 255, 255)
             )
         }
 
         DropdownMenu(
+            modifier = Modifier.background(Color(100, 149, 237)),
             expanded = expandido,
             onDismissRequest = { expandido = false }
         ) {
             serviciosInterior.forEach { servicio ->
-                //serv = servicio.nombre
                 DropdownMenuItem(
                     { Text(text = servicio.nombre) },
                     onClick = { expandido = false; eleccion(servicio.nombre) }
@@ -514,156 +535,3 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
         }
     }
 }
-
-//----------------------------------------------------------------
-/*
-@Composable
-fun datosCliente2() {
-    val auth = FirebaseAuth.getInstance()
-    val BD = FirebaseFirestore.getInstance("default")
-    val userActual = auth.currentUser
-    var userDevuelto = usuario("", "", "", 0)
-
-    //-----LA APP CRASHEA----------
-    if (userActual != null) {
-        val docRef = userActual.email?.let { BD.collection("usuarios").document(it) }
-        docRef?.get()?.addOnSuccessListener { documentSnapshot ->
-            userDevuelto = documentSnapshot.toObject<usuario>()!!
-        }
-    }
-    /*-----LA APP CRASHEA----------
-    val postListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            val userDevueltoeventlistener = dataSnapshot.getValue<usuario>()
-            if (userDevueltoeventlistener != null) {
-                print("Email: ${userDevueltoeventlistener.email}")
-                print(userDevueltoeventlistener.nombre)
-                print(userDevueltoeventlistener.telefono)
-            }
-        }
-        override fun onCancelled(databaseError: DatabaseError) {
-            Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
-        }
-    }
-    Firebase.database.reference.addValueEventListener(postListener)
-    */
-    //-----LA APP CRASHEA----------
-    /*
-    if (userActual != null) {
-        var email = userActual.email
-        var nombre = ""
-        var telefono = ""
-
-        val datosUserActual = email?.let { BD.collection("usuarios").document(it) }
-        datosUserActual?.get()?.addOnSuccessListener { documentSnapshot ->
-            userDevuelto = documentSnapshot.toObject<usuario>()!!//que no es nulo
-        }
-    }
-    return userDevuelto
-}
-*/
-
-/*
-@Composable
-fun datosClienteMia() {
-val auth = FirebaseAuth.getInstance()
-val BD = FirebaseFirestore.getInstance("default")
-val userActual = auth.currentUser
-
-
-if (userActual != null) {
-    var email = userActual.email
-    var nombre = ""
-    var telefono = ""
-    email?.let {
-        BD.collection("usuarios").document(userActual.uid).get().addOnSuccessListener { it ->
-            nombre = it.get("nombre").toString()
-            telefono = it.get("telefono").toString()
-        }
-    }
-}
-}
-*/
-/*
-@Composable
-fun datosCliente1() {
-val auth = FirebaseAuth.getInstance()
-val BD = FirebaseFirestore.getInstance("default")
-val userActual = auth.currentUser
-var userDevuelto = usuario("", "", "", 0)
-
-
-if (userActual != null) {
-    var email = userActual.email
-    var nombre = ""
-    var telefono = ""
-
-    val usuarioscollection = BD.collection("usuarios")
-    val query = email?.let { usuarioscollection.whereEqualTo("email", it) }
-    query?.get()?.addOnSuccessListener { documentSnapshot ->
-        userDevuelto = documentSnapshot.toObjects<usuario>(usuario.class)
-    }
-}
-}
-*/
-/*
-@Composable
-fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) {
-
-    var expandido by remember { mutableStateOf(false) }
-    val serviciosInterior = getServiciosInterior()
-    var serv: String? = null
-    val serviciosInteriorCNombre = getServiciosInteriorCNombre()
-    val serviciosSeleccionados = remember { mutableListOf<String>() }
-
-    var pulsedAñadirServicio = false
-
-
-    Box {
-        TextButton(
-            onClick = { expandido = true },
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center)
-        ) {
-            Text(
-                text = servicioSeleccionado ?: "Servicio"
-            )
-        }
-
-        DropdownMenu(
-            expanded = expandido,
-            onDismissRequest = { expandido = false }
-        ) {
-            serviciosInterior.forEach { servicio ->
-                //serv = servicio.nombre
-                DropdownMenuItem(
-                    { Text(text = servicio.nombre) },
-                    onClick = { expandido = false; eleccion(servicio.nombre) }
-                )
-            }
-        }
-    }
-    if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)) {
-        Button(
-            onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
-            modifier = Modifier
-                .height(40.dp)
-                .width(250.dp)
-                .padding(start = 10.dp, top = 4.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Blue, contentColor = Color.White
-            ),
-            shape = RectangleShape
-        ) {
-            androidx.compose.material3.Text(text = "AÑADIR SERVICIO")
-        }
-        if (pulsedAñadirServicio) {
-            selectorServicio(
-                servicioSeleccionado = servicioSeleccionado,
-                eleccion = { servicio -> serv = servicio })
-        }
-    }
-}
-
- */

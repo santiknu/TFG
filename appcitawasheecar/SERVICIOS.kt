@@ -1,12 +1,13 @@
 package com.example.appcitawasheecar
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalCarWash
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +39,8 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -51,7 +56,7 @@ import com.google.firebase.auth.FirebaseAuth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaServicios(controller: NavController) {
-    
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -67,9 +72,9 @@ fun pantallaServicios(controller: NavController) {
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(100,149,237),
-                    titleContentColor = Color(240,255,255),
-                    actionIconContentColor = Color(240,255,255)
+                    containerColor = Color(100, 149, 237),
+                    titleContentColor = Color(240, 255, 255),
+                    actionIconContentColor = Color(240, 255, 255)
                 ),
                 title = {
                     Text(
@@ -80,7 +85,7 @@ fun pantallaServicios(controller: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(ruta)}) {
+                    IconButton(onClick = { controller.navigate(ruta) }) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
@@ -93,8 +98,8 @@ fun pantallaServicios(controller: NavController) {
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = Color(100,149,237),
-                contentColor = Color(240,255,255),
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 actions = {
                     IconButton(
                         onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
@@ -171,9 +176,10 @@ fun getServiciosInteriorB(): List<Servicio> {
         Servicio("Limpieza de cercos", "5", "2-10", R.drawable.cercos),
     )
 }
+
 fun getServiciosInteriorBNombre(): List<String> {
     return listOf(
-       "Aspirado",
+        "Aspirado",
         "Limpieza de plasticos",
         "Limpieza de cristales",
         "Limpieza de cercos",
@@ -187,6 +193,7 @@ fun getServiciosInteriorC(): List<Servicio> {
         Servicio("Limpieza Tapiceria", "100-150", "3-6", R.drawable.tapiceria),
     )
 }
+
 fun getServiciosInteriorCNombre(): List<String> {
     return listOf(
         "Limpieza Integral",
@@ -208,15 +215,60 @@ fun getServiciosInterior(): List<Servicio> {
 }
 
 @Composable
+fun Header(text: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(240, 255, 255))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color(100, 149, 237),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+fun boxServicios(header: String, servicios: List<Servicio>) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(100, 149, 237))
+            .clip(RoundedCornerShape(16.dp))
+            .padding(8.dp)
+    ) {
+        Column {
+            Header(text = header)
+            servicios.forEach { servicio ->
+                ItemServicio(servicio)
+            }
+        }
+    }
+}
+
+@Composable
 fun ItemServicio(servicio: Servicio) {
     val textoTiempo =
         if (servicio.tiempo == "3-6") "${servicio.tiempo} horas" else "${servicio.tiempo} min"
     Card(
-        border = BorderStroke(1.dp, Color(100,149,237)),
-        elevation = CardDefaults.cardElevation(2.dp, 0.dp, 5.dp, 5.dp, 0.dp, 0.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors = CardColors(
+            containerColor = Color(240, 255, 255),
+            contentColor = Color(100, 149, 237),
+            disabledContentColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent
+        ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp),
+            .padding(8.dp),
+        border = BorderStroke(1.dp, Color(100, 149, 237))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Image(
@@ -224,19 +276,20 @@ fun ItemServicio(servicio: Servicio) {
                 contentDescription = "Foto",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp),
+                    .height(150.dp)
+                    .clip(RoundedCornerShape(16.dp)),
                 contentScale = ContentScale.Crop
             )
             Text(
                 text = servicio.nombre,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "${servicio.precio}€",
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
@@ -251,7 +304,6 @@ fun ItemServicio(servicio: Servicio) {
 
 //----------------------------VIEWS------------------------------------
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StickyView() {// de uno a uno en columna scroll hacia abajo
     val serviciosE = getServiciosExterior()
@@ -263,80 +315,27 @@ fun StickyView() {// de uno a uno en columna scroll hacia abajo
         contentPadding = PaddingValues(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-
         item {
-            Text(
-                text = "Limpieza Exterior",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(100,149,237))
-                    .padding(8.dp),
-                color = Color(235, 245, 251),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+            spacer(espacio = 5)
+            boxServicios(
+                header = "LIMPIEZA EXTERIOR",
+                servicios = serviciosE
             )
+            spacer(espacio = 5)
         }
-        items(serviciosE) { servicio ->
-            ItemServicio(servicio)
-        }
-
         item {
-            Text(
-                text = "Limpieza Interior Básico",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(100,149,237))
-                    .padding(8.dp),
-                color = Color(235, 245, 251),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+            boxServicios(
+                header = "LIMPIEZA INTERIOR BASICA",
+                servicios = serviciosIB
             )
+            spacer(espacio = 5)
         }
-        items(serviciosIB) { servicio ->
-            ItemServicio(servicio)
-        }
-
         item {
-            Text(
-                text = "Limpieza Interior Completo",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(100,149,237))
-                    .padding(8.dp),
-                color = Color(235, 245, 251),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+            boxServicios(
+                header = "LIMPIEZA INTERIRO COMPLETA",
+                servicios = serviciosIC
             )
-        }
-        items(serviciosIC) { servicio ->
-            ItemServicio(servicio)
+            spacer(espacio = 5)
         }
     }
 }
-
-/*@Composable
-fun GridView() {// cuadrados pequeños en fila scroll hacia abajo
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxSize(),
-        content = {
-            items(getServicios()) { servicio ->
-                ItemServicio(servicio = servicio)
-            }
-        }
-    )
-}
-
-@Composable
-fun RecyclerView() {// de uno en uno en fila scroll lateral
-    LazyRow() {
-        items(getServicios()) { servicio: Servicio ->
-            ItemServicio(servicio = servicio)
-        }
-    }
-}*/
-
-//----------------------------------------------------------------

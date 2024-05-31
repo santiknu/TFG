@@ -165,45 +165,13 @@ fun pantallaPerfil(controller: NavController) {
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            //.verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                modifier = Modifier.padding(top = 20.dp, bottom = 10.dp),
-                text = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            textDecoration = TextDecoration.Underline,
-                            color = Color(100, 149, 237),
-                            fontSize = 16.sp,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("TUS DATOS")
-                    }
-                },
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            val modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
+            tituloSubrayado(text = "TUS DATOS", modifier)
             recuperarDatosUsusarioActual(controller)
-            Text(
-                modifier = Modifier.padding(top = 20.dp, bottom = 10.dp),
-                text = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            textDecoration = TextDecoration.Underline,
-                            color = Color(100, 149, 237),
-                            fontSize = 16.sp,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("HISTORIAL DE CITAS")
-                    }
-                },
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            tituloSubrayado(text = "HISTORIAL DE CITAS", modifier)
             spacer(espacio = 5)
             historialCitas()
         }
@@ -213,9 +181,19 @@ fun pantallaPerfil(controller: NavController) {
 
 @Composable
 fun botonCerrarSesion(controller: NavController, modifier: Modifier) {
+
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
     Button(
-        onClick = { auth.signOut(); controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+        onClick = {
+            auth.signOut();
+            controller.navigate(route = AppScreens.HOME_SCREEN.ruta);
+            mensajeFlotante(
+                "Sesion cerrada",
+                context
+            )
+        },
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFF6495ED), contentColor = Color.White
@@ -232,11 +210,7 @@ fun botonCancelarCambios(context: Context, controller: NavController, modifier: 
     Button(
         onClick = {
             controller.navigate(route = AppScreens.PERFIL_SCREEN.ruta)
-            Toast.makeText(
-                context,
-                "Cambios no aplicados",
-                Toast.LENGTH_LONG
-            ).show()
+            mensajeFlotante("Cambios cancelados", context)
         },
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
@@ -281,34 +255,14 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
             }
         }
     }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)//caja
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(240, 255, 255))
-            .padding(20.dp)
-    ) {
+    caja {
         Column {
             Row {
-                Text(
+                tituloSubrayado(
+                    text = "EMAIL",
                     modifier = Modifier
                         .padding(top = 10.dp, bottom = 10.dp)
-                        .align(Alignment.CenterVertically),
-                    text = buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                textDecoration = TextDecoration.Underline,
-                                color = Color(100, 149, 237),
-                                fontSize = 16.sp,
-                                fontStyle = FontStyle.Italic,
-                                fontWeight = FontWeight.Bold
-                            )
-                        ) {
-                            append("EMAIL")
-                        }
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
+                        .align(Alignment.CenterVertically)
                 )
                 Text(
                     text = ": " + email.toString(),
@@ -316,24 +270,11 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
                 )
             }
             Row {
-                Text(
+                tituloSubrayado(
+                    text = "LAVADOS",
                     modifier = Modifier
                         .padding(top = 10.dp, bottom = 10.dp)
-                        .align(Alignment.CenterVertically),
-                    text = buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                textDecoration = TextDecoration.Underline,
-                                color = Color(100, 149, 237),
-                                fontSize = 16.sp,
-                                fontStyle = FontStyle.Italic,
-                                fontWeight = FontWeight.Bold
-                            )
-                        ) {
-                            append("LAVADOS")
-                        }
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
+                        .align(Alignment.CenterVertically)
                 )
                 Text(
                     text = ": $lavados", modifier = Modifier.align(Alignment.CenterVertically)
@@ -341,7 +282,7 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
             }
             Row {
                 campoEditable(
-                    label = "Nombre",
+                    label = "NOMBRE",
                     value = nombre,
                     editable,
                     keyboardType = KeyboardType.Text
@@ -352,7 +293,7 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
             }
             Row {
                 campoEditable(
-                    label = "Teléfono",
+                    label = "TELEFONO",
                     value = telefono,
                     editable,
                     keyboardType = KeyboardType.Phone
@@ -368,9 +309,12 @@ fun recuperarDatosUsusarioActual(controller: NavController) {
                             email?.let {
                                 coleccionUsuarios.document(it).set(userActual)
                                     .addOnSuccessListener {
+                                        mensajeFlotante("Datos cambiados con exito", context)
                                         Log.d("TAG", "DocumentSnapshot successfully written!")
                                     }
                                     .addOnFailureListener { e ->
+                                        msgDialog("Error", "Error al aplicar los cambios", context)
+                                        mensajeFlotante("Error", context)
                                         Log.w("TAG", "Error writing document", e)
                                     }
                             }
@@ -423,43 +367,18 @@ fun ItemCita(cita: cita, coche: vehiculo) {
                 .padding(4.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
-            Text(
+            tituloSubrayado(
+                text = "CITA",
                 modifier = Modifier
                     .padding(top = 10.dp, bottom = 10.dp)
-                    .align(Alignment.CenterHorizontally),
-                text = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            textDecoration = TextDecoration.Underline,
-                            color = Color(100, 149, 237),
-                            fontSize = 16.sp,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("CITA")
-                    }
-                },
-                style = MaterialTheme.typography.bodyLarge,
+                    .align(Alignment.CenterHorizontally)
             )
-            Text(
-                text = cita.servicio,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
+            textoNormal(
+                value = cita.servicio,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Text(
-                text = cita.fecha,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = cita.hora,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            textoNormal(value = cita.fecha, modifier = Modifier.align(Alignment.CenterHorizontally))
+            textoNormal(value = cita.hora, modifier = Modifier.align(Alignment.CenterHorizontally))
         }
         divider(10, 1)
         Column(
@@ -467,42 +386,25 @@ fun ItemCita(cita: cita, coche: vehiculo) {
                 .padding(3.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
-            Text(
+            tituloSubrayado(
+                text = "COCHE",
                 modifier = Modifier
                     .padding(top = 10.dp, bottom = 10.dp)
-                    .align(Alignment.CenterHorizontally),
-                text = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            textDecoration = TextDecoration.Underline,
-                            color = Color(100, 149, 237),
-                            fontSize = 16.sp,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("COCHE")
-                    }
-                },
-                style = MaterialTheme.typography.bodyLarge,
+                    .align(Alignment.CenterHorizontally)
             )
-            Text(
-                text = coche.matricula,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
+            textoNormal(
+                value = coche.matricula,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Text(
-                text = coche.marca,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
+            textoNormal(
+                value = coche.marca,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Text(
-                text = coche.modelo,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
+            textoNormal(
+                value = coche.modelo,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 5.dp)
             )
         }
     }
@@ -575,40 +477,20 @@ fun campoEditable(
     onValueChange: (String) -> Unit
 ) {
     Row() {
-        Text(
-            modifier = Modifier
-                .padding(top = 10.dp, bottom = 10.dp)
-                .align(Alignment.CenterVertically),
-            text = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        textDecoration = TextDecoration.Underline,
-                        color = Color(100, 149, 237),
-                        fontSize = 16.sp,
-                        fontStyle = FontStyle.Italic,
-                        fontWeight = FontWeight.Bold
-                    )
-                ) {
-                    append(label)
-                }
-            },
-            style = MaterialTheme.typography.bodyLarge
-        )
+        val modifierT = Modifier
+            .padding(top = 10.dp, bottom = 10.dp)
+            .align(Alignment.CenterVertically)
+        val modifierTF = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp)
+            .align(Alignment.CenterVertically)
+        tituloSubrayado(text = label, modifierT)
         if (editable) {
-            TextField(
+            campoTextoSinLabel(
                 value = value,
                 onValueChange = onValueChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp)
-                    .align(Alignment.CenterVertically),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    focusedContainerColor = Color(247, 237, 237, 255),
-                    unfocusedContainerColor = Color(247, 237, 237, 255),
-                    cursorColor = Color.Black
-                )
+                modifier = modifierTF,
+                keyboardType = keyboardType,
             )
         } else {
             Text(
@@ -620,165 +502,3 @@ fun campoEditable(
         }
     }
 }
-
-//------------------------------------------------------
-/*
-suspend fun getUserData(userId: String): usuario? {
-    val firestore = FirebaseFirestore.getInstance()
-    return try {
-        val document = firestore.collection("users").document(userId).get().await()
-        document.toObject(usuario::class.java)
-    } catch (e: Exception) {
-        null
-    }
-}
-*/
-/*
-@Composable
-fun UserProfileScreen(controller: NavController) {
-    var email = FirebaseAuth.getInstance().currentUser?.email
-    var nombre = email?.let { FirebaseFirestore.getInstance().collection("usuarios").document(it) }
-    var telefono = FirebaseAuth.getInstance().currentUser?.phoneNumber
-    var editable by remember { mutableStateOf(false) }
-    var userActual by remember {
-        mutableStateOf(
-            usuario(
-                nombre,
-                telefono,
-                email,
-                5,
-                listOf(
-                    vehiculo(marca = "Toyota", modelo = "Corolla", matricula = "ABC-1234"),
-                    vehiculo(marca = "Honda", modelo = "Civic", matricula = "XYZ-5678")
-                )
-            )
-        )
-    }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = "Perfil del Usuario",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        userActual.nombre?.let {
-            EditableField(
-                label = "Nombre",
-                value = it,
-                isEditing = editable
-            ) {
-                userActual = userActual.copy(nombre = it)
-            }
-        }
-        userActual.telefono?.let {
-            EditableField(
-                label = "Teléfono",
-                value = it,
-                isEditing = editable,
-                keyboardType = KeyboardType.Phone
-            ) {
-                userActual = userActual.copy(telefono = it)
-            }
-        }
-        userActual.email?.let {
-            EditableField(
-                label = "Email",
-                value = it,
-                isEditing = editable,
-                keyboardType = KeyboardType.Email
-            ) {
-                userActual = userActual.copy(email = it)
-            }
-        }
-        Text(
-            text = "Cantidad de Lavados: ${userActual.lavados}",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Text(
-            text = "Vehículos",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        userActual.vehiculos.forEach { vehiculo ->
-            VehiculoInfo(vehiculo)
-        }
-
-        spacer(espacio = 16)
-
-        Row {
-            Button(
-                onClick = { editable = !editable },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.Blue
-                )
-            ) {
-                Text(
-                    text =
-                    if (editable)
-                        "Guardar"
-                    else
-                        "Editar"
-                )
-            }
-            spacer(espacio = 16)
-            botonCerrarSesion(controller)
-        }
-    }
-}
-*/
-/*
-@Composable
-fun infoVehiculo(vehiculo: vehiculo) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = "Matrícula: ${vehiculo.matricula}")
-        Text(text = "Marca: ${vehiculo.marca}")
-        Text(text = "Modelo: ${vehiculo.modelo}")
-    }
-}
-*/
-/*coleccionUsuarios.document(email).get().addOnSuccessListener{documentSnapshot ->
-
-    userActual = documentSnapshot.toObject<usuario>()!!
-
-    nombre = documentSnapshot.get("nombre").toString()
-    telefono = documentSnapshot.get("telefono").toString()
-    lavados = documentSnapshot.get("lavados").toString().toInt()
-    userActual = usuario(email, nombre, telefono, lavados)
-
-}*/
-/*coleccionUsuarios.document(email.toString()).get().addOnSuccessListener {
-    nombre = it.get("nombre").toString()
-    telefono = it.get("telefono").toString()
-    lavados = it.get("lavados").toString().toInt()
-    userActual = usuario(email, nombre, telefono, lavados)
-
-}*/
-/*
-var matricula = ""
-var marca: String
-var modelo: String
-var vehiculo: vehiculo? = null
-if (email != null) {
-    nombre = "Manolo"
-    telefono = "1234"
-    BD.collection("usuarios").document(email).get().addOnSuccessListener {
-        nombre = "Juan y medio"
-        nombre = it.get("nombre").toString()
-        telefono = it.get("telefono").toString()
-        lavados = it.get("lavados").toString().toInt()
-        matricula = it.get("vehiculo").toString()
-        BD.collection("vehiculos").document(matricula).get().addOnSuccessListener { itV ->
-            marca = itV.get("marca").toString()
-            modelo = itV.get("modelo").toString()
-            vehiculo = vehiculo(marca, modelo, matricula)
-        }
-    }
-}
-*/
-
-//var userActual by remember { mutableStateOf(usuario(nombre, telefono, email, lavados, vehiculos))}
-//var userActual = usuario(nombre, telefono, email, lavados)

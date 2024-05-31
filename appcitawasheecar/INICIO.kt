@@ -4,13 +4,17 @@ import android.app.AlertDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
@@ -43,6 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +59,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.auth.FirebaseAuth
@@ -78,7 +84,7 @@ fun pantallaInicioSesion(controller: NavController) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
-        backgroundColor = Color(133, 193, 233),
+        backgroundColor = Color(214, 234, 248),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
@@ -161,31 +167,76 @@ fun pantallaInicioSesion(controller: NavController) {
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.padding(top = 30.dp, bottom = 20.dp)
             ) {
-                logo()
+                Box(
+                    modifier = Modifier
+                        .padding(10.dp)//caja
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .padding(2.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    logo()
+                }
             }
             iniciarSesion(controller = controller)
             spacer(espacio = 20)
-            Row(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 30.dp, bottom = 10.dp)
-            ) {
-                noCuenta(controller = controller, ruta2)
-            }
+            divider(horizontal = 15, vertical = 10)
+            noCuenta(controller = controller, ruta2)
+
         }
     }
 }
 
 @Composable
-fun noCuenta(controller: NavController, ruta : String) {
+fun noCuenta(controller: NavController, ruta: String) {
     Row {
-        Text(text = "¿No tienes cuenta?")
+        Text(
+            text = "¿No tienes cuenta?",
+            modifier = Modifier.align(Alignment.CenterVertically),
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
         Text(
             text = "Registrate",
-            modifier = Modifier.clickable { controller.navigate(ruta) },
-            color = Color.Blue
+            modifier = Modifier
+                .clickable { controller.navigate(ruta) }
+                .padding(4.dp)
+                .align(Alignment.CenterVertically),
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(100, 149, 237)
         )
     }
+}
+
+@Composable
+fun campoUser(
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType,
+    modifier: Modifier,
+    placeholder: String
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = {
+            Text(
+                text = placeholder,
+                color = Color(240, 255, 255),
+                fontSize = 16.sp
+            )
+        },
+        shape = MaterialTheme.shapes.small,
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = Color.Black,
+            focusedContainerColor = Color(100, 149, 237),
+            unfocusedContainerColor = Color(100, 149, 237),
+            cursorColor = Color.Black
+        ),
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -200,67 +251,30 @@ fun iniciarSesion(controller: NavController) {
     val context = LocalContext.current
 
     Row(modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)) {
-        TextField(
+        campoUser(
             value = user,
             onValueChange = { enabledUser = true; user = it },
-            placeholder = { Text(text = "Email", color = Color.Gray) },
-            shape = MaterialTheme.shapes.small,
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                focusedContainerColor = Color(247, 237, 237, 255),
-                unfocusedContainerColor = Color(247, 237, 237, 255),
-                cursorColor = Color.Black
-            ),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+            keyboardType = KeyboardType.Email,
             modifier = Modifier
                 .size(325.dp, 50.dp)
-                .background(color = Color.White)
+                .background(color = Color.White),
+            placeholder = "Email"
         )
     }
     Row {
-
-        TextField(
+        campoTextoPssw(
             value = passw,
             onValueChange = { enabledPassw = true; passw = it },
-            placeholder = { Text(text = "Contraseña", color = Color.Gray) },
-            shape = MaterialTheme.shapes.small,
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                focusedContainerColor = Color(247, 237, 237, 255),
-                unfocusedContainerColor = Color(247, 237, 237, 255),
-                cursorColor = Color.Black
-            ),
-            trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        painter = painterResource(
-                            if (passwordVisible) {
-                                R.drawable.ojovisible
-                            } else {
-                                R.drawable.ojoinvisible
-                            }
-                        ),
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            singleLine = true,
-
+            visible = passwordVisible,
+            colorTxt = Color(240, 255, 255),
             modifier = Modifier
                 .size(325.dp, 50.dp)
-                .background(color = Color.Transparent)
+                .background(color = Color.White),
+            placeholder = "Contraseña"
         )
     }
     Row(
         modifier = Modifier
-            //.align(Alignment.End)
             .padding(top = 30.dp)
     ) {
         Button(
@@ -289,138 +303,17 @@ fun iniciarSesion(controller: NavController) {
                         }
                     }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp)
+                .align(Alignment.CenterVertically),
+            shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(100, 149, 237), contentColor = Color(100, 149, 237)
-            )
+                containerColor = Color(0xFF6495ED), contentColor = Color.White
+            ),
+            elevation = ButtonDefaults.buttonElevation(8.dp),
         ) {
             Text(text = "Entrar")
         }
     }
 }
-/*
-fun iniciarSesionFirebase(user: String, password: String): Boolean {
-    var confirmado = false;
-    FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).addOnCompleteListener {
-        if (it.isSuccessful) {
-            confirmado = true
-        }
-    }
-    return confirmado
-}
-
-suspend fun iniciarSesionFirebaseSuspend(user: String, password: String): Boolean {
-    return try {
-        val authResult =
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(user, password).await()
-        authResult.user != null
-    } catch (e: Exception) {
-        false
-    }
-}
-*/
-/*
-@Composable
-fun campoUser() {
-    var enabled by rememberSaveable { mutableStateOf(false) }
-    var user by rememberSaveable { mutableStateOf("") }
-    TextField(
-        value = user,
-        onValueChange = { enabled = true; user = it },
-        placeholder = { Text(text = "Email", color = Color.Gray) },
-        shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Transparent,
-            focusedContainerColor = Color(247, 237, 237, 255),
-            unfocusedContainerColor = Color(247, 237, 237, 255),
-            cursorColor = Color.Black
-        ),
-        modifier = Modifier
-            .size(325.dp, 50.dp)
-            .background(color = Color.White)
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun campoContraseña() {
-
-    var passw by rememberSaveable { mutableStateOf("") }
-    var enabled by rememberSaveable { mutableStateOf(false) }
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    TextField(
-        value = passw,
-        onValueChange = { enabled = true; passw = it },
-        placeholder = { Text(text = "Contraseña", color = Color.Gray) },
-        shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Transparent,
-            focusedContainerColor = Color(247, 237, 237, 255),
-            unfocusedContainerColor = Color(247, 237, 237, 255),
-            cursorColor = Color.Black
-        ),
-        trailingIcon = {
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    painter = painterResource(
-                        if (passwordVisible) {
-                            R.drawable.ojovisible
-                        } else {
-                            R.drawable.ojoinvisible
-                        }
-                    ),
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Done
-        ),
-        singleLine = true,
-
-        modifier = Modifier
-            .size(325.dp, 50.dp)
-            .background(color = Color.Transparent)
-    )
-}
-
-@Composable
-fun botonLogIn(controller: NavController, user: String, passw: String) {
-
-    var conf = false
-
-    Button(
-        onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta); conf = iniciarSesionFirebase(user, passw)},
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent, contentColor = Color.Blue
-        )
-    ) {
-        Text(text = "Entrar")
-    }
-}
-
-@Composable
-fun errorMssg() {
-    val openAlertDialog = remember { mutableStateOf(false) }
-    AlertDialog(
-        onDismissRequest = { openAlertDialog.value = false },
-        buttons = {
-            TextButton(onClick = { openAlertDialog.value = false }) {
-                Text("Confirm")
-            }
-            TextButton(onClick = { openAlertDialog.value = false }) {
-                Text("Dismiss")
-            }
-        }
-    )
-}
-
-*/
