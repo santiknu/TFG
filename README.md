@@ -25,7 +25,6 @@ Una vez creada la cuenta, podremos acceder a todas las funcionalidades
 
 ![image](https://github.com/santiknu/TFG/assets/131476967/39965b4a-a94d-4799-8952-3fc4f941590a)
 
-![image](https://github.com/santiknu/TFG/assets/131476967/101ba2c1-bfe2-405b-bbf2-195b022f0a88)
 
 
 
