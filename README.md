@@ -19,8 +19,8 @@ Para poder explorar a fondo la aplicacion es necesario crearse una cuenta, lo cu
 ![image](https://github.com/santiknu/TFG/assets/131476967/c37549ad-d686-43fc-a9f6-bb9b93dfd520)
 <table>
   <tr>
-    <td><img src="![image](https://github.com/santiknu/TFG/assets/131476967/a1d462b7-0792-4e4f-bca5-f8cccd088128)" alt="Descripción de la imagen 1" width="200"/></td>
-    <td><img src="URL_de_la_imagen_2" alt="Descripción de la imagen 2" width="200"/></td>
+    <td><img src="https://github.com/santiknu/TFG/assets/131476967/a1d462b7-0792-4e4f-bca5-f8cccd088128" alt="Descripción de la imagen 1" width="200"/></td>
+    <td><img src="https://github.com/santiknu/TFG/assets/131476967/c37549ad-d686-43fc-a9f6-bb9b93dfd520" alt="Descripción de la imagen 2" width="200"/></td>
   </tr>
 </table>
 
