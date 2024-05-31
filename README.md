@@ -27,7 +27,7 @@ Una vez creada la cuenta, podremos acceder a todas las funcionalidades
 <table>
   <tr>
     <td><img src="https://github.com/santiknu/TFG/assets/131476967/dbd07dae-fc4c-4e20-bc06-42a10bee4f86" alt="Descripción de la imagen 1" width="200"/></td>
-    <td><img src="https://github.com/santiknu/TFG/assets/131476967/39965b4a-a94d-4799-8952-3fc4f941590a" alt="Descripción de la imagen 2" width="200"/></td>
+    <td><img src="https://github.com/santiknu/TFG/assets/131476967/fb7df5bd-d4cf-4055-9667-bf88d162150c" alt="Descripción de la imagen 2" width="200"/></td>
   </tr>
 </table>
 
