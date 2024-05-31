@@ -3,7 +3,6 @@ package com.example.appcitawasheecar
 import android.app.AlertDialog
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -51,14 +51,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.appcitawasheecar.FireBase.usuario
 import com.example.appcitawasheecar.navigation.AppScreens
-import com.google.firebase.Firebase
 import com.google.firebase.appcheck.internal.util.Logger.TAG
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +71,7 @@ fun pantallaRegistro(controller: NavController) {
     }
 
     Scaffold(
+        backgroundColor = Color(214, 234, 248),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
@@ -85,7 +84,8 @@ fun pantallaRegistro(controller: NavController) {
                     Text(
                         "Registrarse",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 actions = {
@@ -131,8 +131,8 @@ fun pantallaRegistro(controller: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                containerColor = Color(240, 255, 255),
-                contentColor = Color(100, 149, 237),
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
             ) {
                 Icon(
@@ -236,52 +236,54 @@ fun registrarUsuario(controller: NavController) {
         onClick = {
             coroutineScope.launch {
 
-                val userNuevo = usuario (email, lavados = 0, nombre, telefono)
+                val userNuevo = usuario(email, lavados = 0, nombre, telefono)
 
                 if (userNuevo.email != null) {
-                    auth.createUserWithEmailAndPassword(userNuevo.email, password).addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            Toast.makeText(
-                                context,
-                                "Bienvenido",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            val userNuevoLOG = hashMapOf(
-                                "email" to userNuevo.email,
-                                "lavados" to userNuevo.lavados,
-                                "nombre" to userNuevo.nombre,
-                                "telefono" to userNuevo.telefono
-                            )
+                    auth.createUserWithEmailAndPassword(userNuevo.email, password)
+                        .addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                Toast.makeText(
+                                    context,
+                                    "Bienvenido",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                val userNuevoLOG = hashMapOf(
+                                    "email" to userNuevo.email,
+                                    "lavados" to userNuevo.lavados,
+                                    "nombre" to userNuevo.nombre,
+                                    "telefono" to userNuevo.telefono
+                                )
 
-                            BD.collection("usuarios").document(email)
-                                .set(userNuevoLOG)
-                                .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully written!") }
-                                .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
-                            /*val datosUser = hashMapOf(
-                                "email" to userNuevo.email,
-                                "lavados" to userNuevo.lavados,
-                                "nombre" to userNuevo.nombre,
-                                "telefono" to userNuevo.telefono
-                            )
-                            coleccionUsusarios.document(userNuevo.email.toString()).set(datosUser)*/
-                            controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
-                        } else {
-                            val builder = AlertDialog.Builder(context)
-                            builder.setTitle("Error")
-                            builder.setMessage("Se ha produciodo un error")
-                            builder.setPositiveButton("Reintentar", null)
-                            val dialog: AlertDialog = builder.create()
-                            dialog.show()
-                            Toast.makeText(
-                                context,
-                                "No ha sido posible crear el usuario",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                                BD.collection("usuarios").document(email)
+                                    .set(userNuevoLOG)
+                                    .addOnSuccessListener {
+                                        Log.d(
+                                            TAG,
+                                            "DocumentSnapshot successfully written!"
+                                        )
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.w(
+                                            TAG,
+                                            "Error writing document",
+                                            e
+                                        )
+                                    }
+                                controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
+                            } else {
+                                val builder = AlertDialog.Builder(context)
+                                builder.setTitle("Error")
+                                builder.setMessage("Se ha produciodo un error")
+                                builder.setPositiveButton("Reintentar", null)
+                                val dialog: AlertDialog = builder.create()
+                                dialog.show()
+                                Toast.makeText(
+                                    context,
+                                    "No ha sido posible crear el usuario",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
-                    }
-
-                    //coleccionUsusarios.document(userNuevo.email).set(userNuevo)
-                    //Firebase.database.reference.child("usuarios").child(userNuevo.email).setValue(userNuevo)
                 }
             }
         },

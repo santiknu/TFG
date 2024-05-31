@@ -2,11 +2,16 @@ package com.example.appcitawasheecar
 
 import android.provider.CalendarContract.Instances
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -18,24 +23,29 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalCarWash
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun logo(){
@@ -51,7 +61,8 @@ fun logoPNG(){
     Image(
         painter = painterResource(id = R.drawable.logo_png),
         contentDescription = "logo png",
-        modifier = Modifier.size(320.dp)
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.size(320.dp).padding(10.dp)
     )
 }
 
@@ -61,20 +72,34 @@ fun spacer(espacio : Int){
 }
 
 @Composable
-fun BD() : FirebaseApp {
-    val BD = FirebaseApp.getInstance()
-    return BD
+fun divider(horizontal : Int, vertical : Int) {
+    HorizontalDivider(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = horizontal.dp, vertical = vertical.dp ),
+        color = Color(100, 149, 237)
+    )
 }
 
 //-----------------ESTRUCTURA BASE DE APP------------------------
 /*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun pantallaHome(controller: NavController) {
+fun estructuraBase(controller: NavController) {
+
+    val auth = FirebaseAuth.getInstance()
+    var ruta = AppScreens.LOGIN_SCREEN.ruta
+    var ruta2 = AppScreens.REGISTER_SCREEN.ruta
+    if (auth.currentUser != null){
+        ruta = AppScreens.PERFIL_SCREEN.ruta
+        ruta2 = AppScreens.PERFIL_SCREEN.ruta
+    }
+
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        backgroundColor = Color(135, 206, 235),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
@@ -84,15 +109,16 @@ fun pantallaHome(controller: NavController) {
                     actionIconContentColor = Color(240,255,255)
                 ),
                 title = {
-                    Text(
+                    androidx.compose.material3.Text(
                         "Menu Principal",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 actions = {
-                    IconButton(onClick = { controller.navigate(route = AppScreens.LOGIN_SCREEN.ruta) }) {
-                        Icon(
+                    androidx.compose.material3.IconButton(onClick = { controller.navigate(route = ruta) }) {
+                        androidx.compose.material3.Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = null,
                             modifier = Modifier.size(33.dp)
@@ -107,42 +133,42 @@ fun pantallaHome(controller: NavController) {
                 containerColor = Color(100,149,237),
                 contentColor = Color(240,255,255),
                 actions = {
-                    IconButton(
+                    androidx.compose.material3.IconButton(
                         onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
                         modifier = Modifier.weight(0.5f)
                     ) {
-                        Icon(
+                        androidx.compose.material3.Icon(
                             Icons.Filled.Home,
                             contentDescription = null,
                             modifier = Modifier.size(33.dp)
                         )
                     }
-                    IconButton(
+                    androidx.compose.material3.IconButton(
                         onClick = { controller.navigate(route = AppScreens.SERVICIOS_SCREEN.ruta) },
                         modifier = Modifier.weight(0.5f)
                     ) {
-                        Icon(
+                        androidx.compose.material3.Icon(
                             Icons.Filled.LocalCarWash,
                             contentDescription = null,
                             modifier = Modifier.size(33.dp)
                         )
                     }
-                },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                        containerColor = Color(240,255,255),
-                        contentColor = Color(100,149,237),
-                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                    ) {
-                        Icon(
-                            Icons.Filled.Event,
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
+                containerColor = Color(240,255,255),
+                contentColor = Color(100,149,237),
+                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+            ) {
+                androidx.compose.material3.Icon(
+                    Icons.Filled.Event,
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -156,7 +182,6 @@ fun pantallaHome(controller: NavController) {
         }
     }
 }
-
 */
 //------------------------BASES RECHAZADAS--------------------
 /*@Composable

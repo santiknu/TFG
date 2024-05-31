@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -77,6 +78,7 @@ fun pantallaInicioSesion(controller: NavController) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        backgroundColor = Color(133, 193, 233),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
@@ -89,7 +91,8 @@ fun pantallaInicioSesion(controller: NavController) {
                     Text(
                         "Iniciar Sesion",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 actions = {
@@ -135,8 +138,8 @@ fun pantallaInicioSesion(controller: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                containerColor = Color(240, 255, 255),
-                contentColor = Color(100, 149, 237),
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
             ) {
                 Icon(
@@ -288,7 +291,7 @@ fun iniciarSesion(controller: NavController) {
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent, contentColor = Color.Blue
+                containerColor = Color(100, 149, 237), contentColor = Color(100, 149, 237)
             )
         ) {
             Text(text = "Entrar")

@@ -1,9 +1,12 @@
 package com.example.appcitawasheecar
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
@@ -38,12 +42,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +68,7 @@ fun pantallaHome(controller: NavController) {
     val auth = FirebaseAuth.getInstance()
     var ruta = AppScreens.LOGIN_SCREEN.ruta
     var ruta2 = AppScreens.REGISTER_SCREEN.ruta
-    if (auth.currentUser != null){
+    if (auth.currentUser != null) {
         ruta = AppScreens.PERFIL_SCREEN.ruta
         ruta2 = AppScreens.PERFIL_SCREEN.ruta
     }
@@ -70,19 +77,21 @@ fun pantallaHome(controller: NavController) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        backgroundColor = Color(214, 234, 248),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(100,149,237),
-                    titleContentColor = Color(240,255,255),
-                    actionIconContentColor = Color(240,255,255)
+                    containerColor = Color(100, 149, 237),
+                    titleContentColor = Color(240, 255, 255),
+                    actionIconContentColor = Color(240, 255, 255)
                 ),
                 title = {
                     Text(
                         "Menu Principal",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 actions = {
@@ -99,8 +108,10 @@ fun pantallaHome(controller: NavController) {
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = Color(100,149,237),
-                contentColor = Color(240,255,255),
+                /*containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),*/
+                containerColor = Color(0xFF6495ED),
+                contentColor = Color(0xFFF0FFFF),
                 actions = {
                     IconButton(
                         onClick = { controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
@@ -128,8 +139,8 @@ fun pantallaHome(controller: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                containerColor = Color(240,255,255),
-                contentColor = Color(100,149,237),
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
             ) {
                 Icon(
@@ -159,14 +170,18 @@ fun pantallaHome(controller: NavController) {
             Row {
                 botonRegistrarse(controller, ruta2)
             }
-            spacer(espacio = 20)
+            spacer(espacio = 12)
+            Row {
+                bannerPromociones()
+            }
+            spacer(espacio = 10)
             Row {
                 carruselFotos()
             }
-            spacer(espacio = 15)
-            Mapa()
-            spacer(espacio = 12)
+            divider(horizontal = 20, vertical = 5)
             cajaBottom()
+            divider(horizontal = 20, vertical = 5)
+            Mapa()
         }
     }
 }
@@ -177,29 +192,31 @@ fun botonCita(controller: NavController) {
         onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
         modifier = Modifier
             .width(250.dp)
-            .height(40.dp),
-        shape = RectangleShape,
+            .height(50.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(100,149,237), contentColor = Color.White
-        )
+            containerColor = Color(100, 149, 237), contentColor = Color.White
+        ),
+        elevation = ButtonDefaults.buttonElevation(8.dp)
     ) {
-        Text(text = "¡Pide tu cita YA!", fontSize = 18.sp)
+        Text(text = "¡Pide tu cita YA!", fontSize = 18.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-fun botonRegistrarse(controller: NavController, ruta2 : String) {
+fun botonRegistrarse(controller: NavController, ruta2: String) {
     Button(
         onClick = { controller.navigate(ruta2) },
         modifier = Modifier
             .width(250.dp)
-            .height(40.dp),
-        shape = RectangleShape,
+            .height(50.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(100,149,237), contentColor = Color.White
-        )
+            containerColor = Color(0xFF6495ED), contentColor = Color.White
+        ),
+        elevation = ButtonDefaults.buttonElevation(8.dp)
     ) {
-        Text(text = "¡Registrate!", fontSize = 18.sp)
+        Text(text = "¡Registrate!", fontSize = 18.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -215,12 +232,12 @@ fun cajaTop() {
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .fillMaxSize()
-                .blur(8.dp)
+                .fillMaxSize(1f)
+                .blur(6.dp)
         )
         Column(
             modifier = Modifier
-                .fillMaxHeight()
+                .fillMaxHeight(1f)
                 .align(Alignment.Center)
         ) {
             logoPNG()
@@ -241,18 +258,24 @@ fun carruselFotos() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp),
+            .padding(start = 5.dp, end = 5.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HorizontalPager(
             count = fotos.size,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(1f),
+            contentPadding = PaddingValues(horizontal = 16.dp)
         ) { page ->
             Image(
                 painter = fotos[page],
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth()
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White)
+                    .border(2.dp, Color(0xFF6495ED), RoundedCornerShape(8.dp))
             )
         }
     }
@@ -279,31 +302,42 @@ fun cajaBottom() {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(imageVector = Icons.Filled.Info, contentDescription = "info")
+                Icon(
+                    imageVector = Icons.Filled.Info,
+                    contentDescription = "info",
+                    tint = Color(0xFF6495ED)
+                )
+                Text(
+                    text = " Información de contacto",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Calle del Trigo 31, 45223, Seseña Viejo")
+                Text(text = "Calle del Trigo 31, 45223, Seseña Viejo", textAlign = TextAlign.Center)
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "644876245")
+                Text(text = "644876245", textAlign = TextAlign.Center)
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "washeecar@gmail.com")
+                Text(text = "washeecar@gmail.com", textAlign = TextAlign.Center)
             }
         }
     }
@@ -311,12 +345,45 @@ fun cajaBottom() {
 
 @Composable
 fun Mapa() {
-    //MapViewContainer()
-    Image(
-        painter = painterResource(id = R.drawable.mapa),
-        contentDescription = "Mapa",
-        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.mapa),
+            contentDescription = "Mapa",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize(1f)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color.White)
+                .border(2.dp, Color(0xFF6495ED), RoundedCornerShape(4.dp))
+        )
+    }
+}
+
+@Composable
+fun bannerPromociones() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)//caja
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFFFD700))
+            .padding(20.dp),//contenido
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "¿Quieres lavar tu coche por fuera?" +
+                    "No pidas cita, ¡Traelo ahora!",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            textAlign = TextAlign.Center
+        )
+    }
 }
 /*
 @Composable

@@ -24,6 +24,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,24 +42,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.appcitawasheecar.FireBase.cita
+import com.example.appcitawasheecar.FireBase.crearCita
+import com.example.appcitawasheecar.FireBase.usuario
+import com.example.appcitawasheecar.FireBase.vehiculo
 import com.example.appcitawasheecar.navigation.AppScreens
 import com.google.firebase.appcheck.internal.util.Logger.TAG
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
-data class cita(
-    var fecha: String,
-    var hora: String,
-    var servicio: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,6 +76,7 @@ fun pantallaCita(controller: NavController) {
     }
 
     Scaffold(
+        backgroundColor = Color(214, 234, 248),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
@@ -90,7 +89,8 @@ fun pantallaCita(controller: NavController) {
                     androidx.compose.material3.Text(
                         "Pedir Cita",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 actions = {
@@ -147,7 +147,8 @@ fun pantallaCita(controller: NavController) {
                     text = "Selecciona un dia",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(10.dp),
+                    color = Color(100, 149, 237)
                 )
                 selectorFecha(
                     fechaSeleccionada = fechaSeleccionada,
@@ -159,7 +160,8 @@ fun pantallaCita(controller: NavController) {
                     text = "Selecciona una hora",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(10.dp),
+                    color = Color(100, 149, 237)
                 )
                 selectorHora(
                     horaSeleccionada = horaSeleccionada,
@@ -171,14 +173,16 @@ fun pantallaCita(controller: NavController) {
                     text = "Selecciona un servicio",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(10.dp),
+                    color = Color(100, 149, 237)
                 )
                 selectorServicio(
                     servicioSeleccionado = servicioSeleccionado,
                     eleccion = { servicio -> servicioSeleccionado = servicio })
             }
 
-            val fechaSeleccionadaCita: String = fechaSeleccionada?.let {dateFormatter.format(it).toString()}.toString()
+            val fechaSeleccionadaCita: String =
+                fechaSeleccionada?.let { dateFormatter.format(it).toString() }.toString()
             val horaSeleccionadaCita: String = horaSeleccionada.toString()
             val servicioSeleccionadoCita: String = servicioSeleccionado.toString()
 
@@ -190,8 +194,19 @@ fun pantallaCita(controller: NavController) {
             spacer(espacio = 8)
             var coche = datosCoche()
             spacer(espacio = 8)
+
+            val camposCompletos = fechaSeleccionada != null &&
+                    !horaSeleccionada.isNullOrEmpty() &&
+                    !servicioSeleccionado.isNullOrEmpty() &&
+                    !cliente.nombre.isNullOrEmpty() &&
+                    !cliente.telefono.isNullOrEmpty() &&
+                    !cliente.email.isNullOrEmpty() &&
+                    coche.matricula.isNotEmpty() &&
+                    coche.marca.isNotEmpty() &&
+                    coche.modelo.isNotEmpty()
+
             Row {
-                botonConfirmarCita(cliente, coche, cita, controller)
+                botonConfirmarCita(cliente, coche, cita, controller, camposCompletos)
             }
         }
     }
@@ -208,6 +223,7 @@ fun datosCoche(): vehiculo {
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 10.dp, end = 10.dp),
+        color = Color(100, 149, 237)
     )
     spacer(espacio = 5)
     TextField(
@@ -243,40 +259,41 @@ fun datosCoche(): vehiculo {
 fun datosCliente(): usuario {
 
     val auth = FirebaseAuth.getInstance()
-    val BD = FirebaseFirestore.getInstance()
-    val coleccionUsuarios = BD.collection("usuarios")
     val currentUserAuth = auth.currentUser
+    val emailAuth = currentUserAuth?.email
 
-    var email = currentUserAuth?.email
+    var email by remember { mutableStateOf("") }
     var lavados by remember { mutableIntStateOf(0) }
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
 
     var userActual by remember { mutableStateOf(usuario()) }
 
-    LaunchedEffect(email) {
-        email?.let {
-            coleccionUsuarios.document(it).get().addOnSuccessListener { document ->
-                if (document != null) {
-                    nombre = document.getString("nombre").orEmpty()
-                    telefono = document.getString("telefono").orEmpty()
-                    lavados = document.getLong("lavados")?.toInt() ?: 0
-                    userActual = usuario(it, lavados, nombre, telefono)
-                    Log.d(TAG, "DocumentSnapshot data: ${document.data}")
-                } else {
-                    Log.d(TAG, "No such document")
+    if (currentUserAuth != null) {
+
+        LaunchedEffect(email) {
+            emailAuth?.let {
+                userActual.documentoUsuario(it).get().addOnSuccessListener { document ->
+                    if (document != null) {
+                        email = document.getString("email").orEmpty()
+                        nombre = document.getString("nombre").orEmpty()
+                        telefono = document.getString("telefono").orEmpty()
+                        lavados = document.getLong("lavados")?.toInt() ?: 0
+                        userActual = usuario(email, lavados, nombre, telefono)
+                        Log.d(TAG, "DocumentSnapshot data: ${document.data}")
+                    } else {
+                        Log.d(TAG, "No such document")
+                    }
+                }.addOnFailureListener { exception ->
+                    Log.d(TAG, "get failed with ", exception)
                 }
-            }.addOnFailureListener { exception ->
-                Log.d(TAG, "get failed with ", exception)
             }
         }
-    }
-    if(currentUserAuth != null){
-
         Text(
             "Información del cliente", modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp)
+                .padding(start = 10.dp, end = 10.dp),
+            color = Color(100, 149, 237)
         )
         spacer(espacio = 5)
         userActual.nombre?.let {
@@ -301,7 +318,7 @@ fun datosCliente(): usuario {
             )
         }
         spacer(espacio = 3)
-        email?.let {
+        email.let {
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -312,11 +329,11 @@ fun datosCliente(): usuario {
             )
         }
     } else {
-
         Text(
             "Información del cliente", modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp)
+                .padding(start = 10.dp, end = 10.dp),
+            color = Color(100, 149, 237)
         )
         spacer(espacio = 5)
         TextField(
@@ -345,15 +362,29 @@ fun datosCliente(): usuario {
             onValueChange = { email = it },
             label = { Text("Email") }
         )
+        userActual = usuario(email, lavados, nombre, telefono)
     }
     return userActual
 }
 
 @Composable
-fun botonConfirmarCita(user: usuario, coche: vehiculo, cita: cita, controller: NavController) {
+fun botonConfirmarCita(
+    user: usuario,
+    coche: vehiculo,
+    cita: cita,
+    controller: NavController,
+    activado: Boolean
+) {
 
     Button(
-        onClick = { crearCita(user, coche, cita); controller.navigate(route = AppScreens.HOME_SCREEN.ruta) },
+        onClick = {
+            crearCita(
+                user,
+                coche,
+                cita
+            );
+            controller.navigate(route = AppScreens.HOME_SCREEN.ruta)
+        },
         modifier = Modifier
             .height(60.dp)
             .width(250.dp)
@@ -361,29 +392,11 @@ fun botonConfirmarCita(user: usuario, coche: vehiculo, cita: cita, controller: N
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(100, 149, 237), contentColor = Color(240, 255, 255)
         ),
-        shape = RectangleShape
+        shape = RectangleShape,
+        enabled = activado
     ) {
         Text(text = "CONFIRMAR")
     }
-}
-
-fun crearCita(user: usuario, coche: vehiculo, cita: cita) {
-
-    val BD = FirebaseFirestore.getInstance()
-    val coleccionCitas = BD.collection("citas")
-
-    val datoscita = hashMapOf(
-        "email" to user.email,
-        "fecha" to cita.fecha,
-        "hora" to cita.hora,
-        "marca" to coche.marca,
-        "matricula" to coche.matricula,
-        "modelo" to coche.modelo,
-        "nombre" to user.nombre,
-        "servicio" to cita.servicio,
-        "telefono" to user.telefono,
-    )
-    user.email?.let { coleccionCitas.document(it).set(datoscita) }
 }
 
 @Composable
@@ -402,7 +415,8 @@ fun selectorFecha(fechaSeleccionada: Date?, eleccion: (Date) -> Unit) {
                 .align(Alignment.Center)
         ) {
             Text(
-                text = fechaSeleccionada?.let { dateFormatter.format(it) } ?: "Fecha"
+                text = fechaSeleccionada?.let { dateFormatter.format(it) } ?: "Fecha",
+                color = Color(100, 149, 237)
             )
         }
         DropdownMenu(
@@ -446,7 +460,8 @@ fun selectorHora(horaSeleccionada: String?, eleccion: (String) -> Unit) {
                 .align(Alignment.Center)
         ) {
             Text(
-                text = horaSeleccionada ?: "Hora"
+                text = horaSeleccionada ?: "Hora",
+                color = Color(100, 149, 237)
             )
         }
         DropdownMenu(
@@ -471,13 +486,6 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
 
     var expandido by remember { mutableStateOf(false) }
     val serviciosInterior = getServiciosInterior()
-    /*
-    var serv: String? = null
-    val serviciosInteriorCNombre = getServiciosInteriorCNombre()
-    val serviciosSeleccionados = remember { mutableListOf<String>() }
-
-    var pulsedAñadirServicio = false
-    */
 
     Box {
         TextButton(
@@ -487,7 +495,8 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
                 .align(Alignment.Center)
         ) {
             Text(
-                text = servicioSeleccionado ?: "Servicio"
+                text = servicioSeleccionado ?: "Servicio",
+                color = Color(100, 149, 237)
             )
         }
 
@@ -504,26 +513,6 @@ fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) 
             }
         }
     }
-    /*if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)) {
-        Button(
-            onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
-            modifier = Modifier
-                .height(40.dp)
-                .width(250.dp)
-                .padding(start = 10.dp, top = 4.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Blue, contentColor = Color.White
-            ),
-            shape = RectangleShape
-        ) {
-            androidx.compose.material3.Text(text = "AÑADIR SERVICIO")
-        }
-        if (pulsedAñadirServicio) {
-            selectorServicio(
-                servicioSeleccionado = servicioSeleccionado,
-                eleccion = { servicio -> serv = servicio })
-        }
-    }*/
 }
 
 //----------------------------------------------------------------
@@ -617,3 +606,64 @@ if (userActual != null) {
 }
 }
 */
+/*
+@Composable
+fun selectorServicio(servicioSeleccionado: String?, eleccion: (String) -> Unit) {
+
+    var expandido by remember { mutableStateOf(false) }
+    val serviciosInterior = getServiciosInterior()
+    var serv: String? = null
+    val serviciosInteriorCNombre = getServiciosInteriorCNombre()
+    val serviciosSeleccionados = remember { mutableListOf<String>() }
+
+    var pulsedAñadirServicio = false
+
+
+    Box {
+        TextButton(
+            onClick = { expandido = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
+        ) {
+            Text(
+                text = servicioSeleccionado ?: "Servicio"
+            )
+        }
+
+        DropdownMenu(
+            expanded = expandido,
+            onDismissRequest = { expandido = false }
+        ) {
+            serviciosInterior.forEach { servicio ->
+                //serv = servicio.nombre
+                DropdownMenuItem(
+                    { Text(text = servicio.nombre) },
+                    onClick = { expandido = false; eleccion(servicio.nombre) }
+                )
+            }
+        }
+    }
+    if (servicioSeleccionado != null && !serviciosInteriorCNombre.contains(servicioSeleccionado)) {
+        Button(
+            onClick = { pulsedAñadirServicio = true; serv?.let { serviciosSeleccionados.add(it) } },
+            modifier = Modifier
+                .height(40.dp)
+                .width(250.dp)
+                .padding(start = 10.dp, top = 4.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Blue, contentColor = Color.White
+            ),
+            shape = RectangleShape
+        ) {
+            androidx.compose.material3.Text(text = "AÑADIR SERVICIO")
+        }
+        if (pulsedAñadirServicio) {
+            selectorServicio(
+                servicioSeleccionado = servicioSeleccionado,
+                eleccion = { servicio -> serv = servicio })
+        }
+    }
+}
+
+ */

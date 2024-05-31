@@ -51,6 +51,7 @@ import com.google.firebase.auth.FirebaseAuth
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun pantallaServicios(controller: NavController) {
+    
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -61,6 +62,7 @@ fun pantallaServicios(controller: NavController) {
     }
 
     Scaffold(
+        backgroundColor = Color(214, 234, 248),
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CenterAlignedTopAppBar(
@@ -73,7 +75,8 @@ fun pantallaServicios(controller: NavController) {
                     Text(
                         "Menu Principal",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
                 actions = {
@@ -119,8 +122,8 @@ fun pantallaServicios(controller: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { controller.navigate(route = AppScreens.CITAS_SCREEN.ruta) },
-                containerColor = Color(240,255,255),
-                contentColor = Color(100,149,237),
+                containerColor = Color(100, 149, 237),
+                contentColor = Color(240, 255, 255),
                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
             ) {
                 Icon(
@@ -209,7 +212,7 @@ fun ItemServicio(servicio: Servicio) {
     val textoTiempo =
         if (servicio.tiempo == "3-6") "${servicio.tiempo} horas" else "${servicio.tiempo} min"
     Card(
-        border = BorderStroke(1.dp, Color.Blue),
+        border = BorderStroke(1.dp, Color(100,149,237)),
         elevation = CardDefaults.cardElevation(2.dp, 0.dp, 5.dp, 5.dp, 0.dp, 0.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -260,14 +263,15 @@ fun StickyView() {// de uno a uno en columna scroll hacia abajo
         contentPadding = PaddingValues(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
+
         item {
             Text(
                 text = "Limpieza Exterior",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Blue)
+                    .background(Color(100,149,237))
                     .padding(8.dp),
-                color = Color.White,
+                color = Color(235, 245, 251),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -275,14 +279,15 @@ fun StickyView() {// de uno a uno en columna scroll hacia abajo
         items(serviciosE) { servicio ->
             ItemServicio(servicio)
         }
+
         item {
             Text(
                 text = "Limpieza Interior Básico",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Blue)
+                    .background(Color(100,149,237))
                     .padding(8.dp),
-                color = Color.White,
+                color = Color(235, 245, 251),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -290,14 +295,15 @@ fun StickyView() {// de uno a uno en columna scroll hacia abajo
         items(serviciosIB) { servicio ->
             ItemServicio(servicio)
         }
+
         item {
             Text(
                 text = "Limpieza Interior Completo",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Blue)
+                    .background(Color(100,149,237))
                     .padding(8.dp),
-                color = Color.White,
+                color = Color(235, 245, 251),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
